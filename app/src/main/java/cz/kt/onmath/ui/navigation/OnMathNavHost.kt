@@ -66,6 +66,7 @@ fun OnMathNavHost(
                 state = state,
                 onSelectOperator = vm::onSelectOperator,
                 onSelectSubstituted = vm::onSelectSubstituted,
+                onFocusFinalAnswer = vm::onFocusFinalAnswer,
                 onCancelIntermediate = vm::onCancelIntermediate,
                 onUndoIntermediate = vm::onUndoIntermediate,
                 onDigit = vm::onDigit,

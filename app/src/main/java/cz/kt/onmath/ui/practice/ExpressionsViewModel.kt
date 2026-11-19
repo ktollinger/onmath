@@ -6,6 +6,7 @@ import cz.kt.onmath.data.local.PracticeRepository
 import cz.kt.onmath.data.settings.SettingsRepository
 import cz.kt.onmath.domain.expression.ExpressionDifficulty
 import cz.kt.onmath.domain.expression.ExpressionGenerator
+import cz.kt.onmath.domain.expression.ExpressionNode
 import cz.kt.onmath.domain.expression.ExpressionProblem
 import cz.kt.onmath.domain.expression.ExpressionToken
 import cz.kt.onmath.domain.expression.findBinaryNode
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 
 data class ExpressionsUiState(
     val title: String = "Výrazy a závorky",
+    val root: ExpressionNode? = null,
     val originalExpression: String = "",
     val tokens: List<ExpressionToken> = emptyList(),
     val intermediates: Map<String, Int> = emptyMap(),
@@ -82,6 +84,7 @@ class ExpressionsViewModel(
             hadMistakeOnCurrent = false
             val first = problems.first()
             _uiState.value = ExpressionsUiState(
+                root = first.root,
                 originalExpression = first.key,
                 tokens = first.root.tokenize(),
                 totalCount = problems.size,
@@ -92,38 +95,91 @@ class ExpressionsViewModel(
     fun onSelectOperator(nodeId: String) {
         val state = _uiState.value
         if (state.isAdvancing || state.isFinished) return
-        val opToken = state.tokens.filterIsInstance<ExpressionToken.Operator>()
-            .firstOrNull { it.nodeId == nodeId } ?: return
+        val current = problems.getOrNull(state.currentIndex) ?: return
 
-        if (!opToken.isReady) {
-            _uiState.update {
-                it.copy(feedback = FeedbackState.Hint("Nejdřív spočítej podvýraz v závorce nebo násobení/dělení."))
+        if (state.selectedNodeId == nodeId) {
+            if (state.intermediateInputText.isEmpty()) {
+                onCancelIntermediate()
             }
             return
         }
 
-        val current = problems.getOrNull(state.currentIndex) ?: return
-        if (state.selectedNodeId == nodeId) {
+        val committed = tryAutoCommitPendingIntermediate(state, current) ?: return
+        val (workingIntermediates, workingOrder) = committed
+
+        val refreshedTokens = current.root.tokenize(workingIntermediates, selectedNodeId = null)
+        val opToken = refreshedTokens.filterIsInstance<ExpressionToken.Operator>()
+            .firstOrNull { it.nodeId == nodeId } ?: return
+
+        if (!opToken.isReady) {
             _uiState.update {
                 it.copy(
+                    intermediates = workingIntermediates,
+                    intermediateOrder = workingOrder,
                     selectedNodeId = null,
                     selectedSubExpression = "",
                     intermediateInputText = "",
-                    tokens = current.root.tokenize(it.intermediates, selectedNodeId = null),
-                    feedback = FeedbackState.None,
+                    tokens = refreshedTokens,
+                    feedback = FeedbackState.Hint("Nejdřív spočítej podvýraz v závorce nebo násobení/dělení."),
                 )
             }
-        } else {
+            return
+        }
+
+        _uiState.update {
+            it.copy(
+                intermediates = workingIntermediates,
+                intermediateOrder = workingOrder,
+                selectedNodeId = nodeId,
+                selectedSubExpression = opToken.subExpression,
+                intermediateInputText = "",
+                tokens = current.root.tokenize(workingIntermediates, selectedNodeId = nodeId),
+                feedback = FeedbackState.None,
+            )
+        }
+    }
+
+    fun onFocusFinalAnswer() {
+        val state = _uiState.value
+        if (state.isAdvancing || state.isFinished || state.selectedNodeId == null) return
+        val current = problems.getOrNull(state.currentIndex) ?: return
+        val committed = tryAutoCommitPendingIntermediate(state, current) ?: return
+        val (workingIntermediates, workingOrder) = committed
+        _uiState.update {
+            it.copy(
+                intermediates = workingIntermediates,
+                intermediateOrder = workingOrder,
+                selectedNodeId = null,
+                selectedSubExpression = "",
+                intermediateInputText = "",
+                tokens = current.root.tokenize(workingIntermediates, selectedNodeId = null),
+                feedback = FeedbackState.None,
+            )
+        }
+    }
+
+    private fun tryAutoCommitPendingIntermediate(
+        state: ExpressionsUiState,
+        current: ExpressionProblem,
+    ): Pair<Map<String, Int>, List<String>>? {
+        val pendingId = state.selectedNodeId ?: return state.intermediates to state.intermediateOrder
+        if (state.intermediateInputText.isEmpty()) return state.intermediates to state.intermediateOrder
+
+        val prevNode = current.root.findBinaryNode(pendingId) ?: return state.intermediates to state.intermediateOrder
+        val given = state.intermediateInputText.toIntOrNull()
+        if (given != prevNode.evaluate()) {
             _uiState.update {
                 it.copy(
-                    selectedNodeId = nodeId,
-                    selectedSubExpression = opToken.subExpression,
                     intermediateInputText = "",
-                    tokens = current.root.tokenize(it.intermediates, selectedNodeId = nodeId),
-                    feedback = FeedbackState.None,
+                    feedback = FeedbackState.Wrong("Mezivýsledek pro ${state.selectedSubExpression} nesedí, zkus to znovu."),
                 )
             }
+            return null
         }
+
+        val updatedIntermediates = state.intermediates + (pendingId to given)
+        val updatedOrder = state.intermediateOrder.filterNot { it == pendingId } + pendingId
+        return updatedIntermediates to updatedOrder
     }
 
     fun onSelectSubstituted(nodeId: String) {
@@ -341,6 +397,7 @@ class ExpressionsViewModel(
             _uiState.update {
                 it.copy(
                     currentIndex = nextIndex,
+                    root = next.root,
                     originalExpression = next.key,
                     tokens = next.root.tokenize(),
                     intermediates = emptyMap(),

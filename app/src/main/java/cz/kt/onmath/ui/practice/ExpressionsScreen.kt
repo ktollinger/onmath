@@ -1,12 +1,13 @@
 package cz.kt.onmath.ui.practice
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
@@ -34,18 +37,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cz.kt.onmath.domain.expression.ExpressionToken
+import cz.kt.onmath.domain.expression.BinaryNode
+import cz.kt.onmath.domain.expression.BinaryOperator
+import cz.kt.onmath.domain.expression.ExpressionNode
+import cz.kt.onmath.domain.expression.NumberNode
 import cz.kt.onmath.ui.components.FeedbackBanner
 import cz.kt.onmath.ui.components.MathKeypad
 import cz.kt.onmath.ui.components.PracticeTopBar
 import cz.kt.onmath.ui.components.SessionSummaryView
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExpressionsScreen(
     state: ExpressionsUiState,
     onSelectOperator: (String) -> Unit,
     onSelectSubstituted: (String) -> Unit,
+    onFocusFinalAnswer: () -> Unit,
     onCancelIntermediate: () -> Unit,
     onUndoIntermediate: () -> Unit,
     onDigit: (Int) -> Unit,
@@ -95,85 +101,53 @@ fun ExpressionsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                if (state.intermediates.isNotEmpty()) {
-                    Text(
-                        text = "Zadání: ${state.originalExpression}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                } else {
+                if (state.intermediates.isEmpty() && !state.isEditingIntermediate) {
                     Text(
                         text = "Klepni na znaménko pro zápis mezivýsledku",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                val rootNode = state.root
+                if (rootNode != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.Top,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.padding(horizontal = 4.dp),
+                        ) {
+                            ExpressionTreeNodeView(
+                                node = rootNode,
+                                nodeId = "root",
+                                wrapWithParens = false,
+                                intermediates = state.intermediates,
+                                selectedNodeId = state.selectedNodeId,
+                                enabled = !state.isAdvancing,
+                                onSelectOperator = onSelectOperator,
+                                onSelectSubstituted = onSelectSubstituted,
+                            )
 
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
-                ) {
-                    state.tokens.forEach { token ->
-                        when (token) {
-                            is ExpressionToken.Text -> {
-                                Box(
-                                    modifier = Modifier.defaultMinSize(minHeight = 44.dp),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Text(
-                                        text = token.text,
-                                        fontSize = 32.sp,
-                                        fontWeight = FontWeight.Bold,
-                                    )
-                                }
-                            }
-
-                            is ExpressionToken.SubstitutedNumber -> {
-                                Surface(
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = MaterialTheme.colorScheme.primaryContainer,
-                                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary),
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .clickable(enabled = !state.isAdvancing) {
-                                            onSelectSubstituted(token.nodeId)
-                                        },
-                                ) {
-                                    Text(
-                                        text = token.value.toString(),
-                                        fontSize = 30.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
-                                    )
-                                }
-                            }
-
-                            is ExpressionToken.Operator -> {
-                                OperatorTokenView(
-                                    token = token,
-                                    enabled = !state.isAdvancing,
-                                    onClick = { onSelectOperator(token.nodeId) },
+                            Box(
+                                modifier = Modifier.height(42.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = "= ?",
+                                    fontSize = 28.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 2.dp),
                                 )
                             }
                         }
-                    }
-
-                    Box(
-                        modifier = Modifier.defaultMinSize(minHeight = 44.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = "= ?",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
                     }
                 }
 
@@ -206,7 +180,11 @@ fun ExpressionsScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth(0.65f)
-                        .height(64.dp),
+                        .height(64.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable(enabled = state.isEditingIntermediate && !state.isAdvancing) {
+                            onFocusFinalAnswer()
+                        },
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         val display = state.activeInputText
@@ -280,25 +258,182 @@ fun ExpressionsScreen(
 }
 
 @Composable
+private fun ExpressionTreeNodeView(
+    node: ExpressionNode,
+    nodeId: String,
+    wrapWithParens: Boolean,
+    intermediates: Map<String, Int>,
+    selectedNodeId: String?,
+    enabled: Boolean,
+    onSelectOperator: (String) -> Unit,
+    onSelectSubstituted: (String) -> Unit,
+) {
+    when (node) {
+        is NumberNode -> {
+            Box(
+                modifier = Modifier.height(42.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = node.value.toString(),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+
+        is BinaryNode -> {
+            val leftId = "$nodeId.L"
+            val rightId = "$nodeId.R"
+            val intermediateValue = intermediates[nodeId]
+            val isSelected = selectedNodeId == nodeId
+            val isReady = isNodeResolved(node.left, leftId, intermediates) &&
+                isNodeResolved(node.right, rightId, intermediates)
+            val showParens = node.explicitParentheses || wrapWithParens
+
+            Column(
+                modifier = Modifier.width(IntrinsicSize.Max),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
+                    modifier = if (isSelected) {
+                        Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f))
+                            .padding(horizontal = 4.dp)
+                    } else {
+                        Modifier
+                    },
+                ) {
+                    if (showParens) {
+                        Box(
+                            modifier = Modifier.height(42.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = "(",
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    ExpressionTreeNodeView(
+                        node = node.left,
+                        nodeId = leftId,
+                        wrapWithParens = needsImplicitParens(node, node.left, isRight = false),
+                        intermediates = intermediates,
+                        selectedNodeId = selectedNodeId,
+                        enabled = enabled,
+                        onSelectOperator = onSelectOperator,
+                        onSelectSubstituted = onSelectSubstituted,
+                    )
+
+                    OperatorTokenView(
+                        symbol = node.operator.symbol,
+                        isReady = isReady,
+                        isSelected = isSelected,
+                        isSolved = intermediateValue != null,
+                        enabled = enabled,
+                        onClick = {
+                            if (intermediateValue != null) {
+                                onSelectSubstituted(nodeId)
+                            } else {
+                                onSelectOperator(nodeId)
+                            }
+                        },
+                    )
+
+                    ExpressionTreeNodeView(
+                        node = node.right,
+                        nodeId = rightId,
+                        wrapWithParens = needsImplicitParens(node, node.right, isRight = true),
+                        intermediates = intermediates,
+                        selectedNodeId = selectedNodeId,
+                        enabled = enabled,
+                        onSelectOperator = onSelectOperator,
+                        onSelectSubstituted = onSelectSubstituted,
+                    )
+
+                    if (showParens) {
+                        Box(
+                            modifier = Modifier.height(42.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = ")",
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+
+                if (intermediateValue != null) {
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 6.dp)
+                            .height(2.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
+                                shape = RoundedCornerShape(1.dp),
+                            ),
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable(enabled = enabled) {
+                                onSelectSubstituted(nodeId)
+                            },
+                    ) {
+                        Text(
+                            text = intermediateValue.toString(),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun OperatorTokenView(
-    token: ExpressionToken.Operator,
+    symbol: String,
+    isReady: Boolean,
+    isSelected: Boolean,
+    isSolved: Boolean,
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
     when {
-        token.isSelected -> {
+        isSelected -> {
             Surface(
                 shape = RoundedCornerShape(10.dp),
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
-                    .defaultMinSize(minWidth = 40.dp, minHeight = 44.dp)
+                    .defaultMinSize(minWidth = 38.dp, minHeight = 42.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .clickable(enabled = enabled, onClick = onClick),
             ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 10.dp)) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 8.dp)) {
                     Text(
-                        text = token.symbol,
-                        fontSize = 28.sp,
+                        text = symbol,
+                        fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
@@ -306,20 +441,20 @@ private fun OperatorTokenView(
             }
         }
 
-        token.isReady -> {
+        isReady && !isSolved -> {
             Surface(
                 shape = RoundedCornerShape(10.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
                 modifier = Modifier
-                    .defaultMinSize(minWidth = 40.dp, minHeight = 44.dp)
+                    .defaultMinSize(minWidth = 38.dp, minHeight = 42.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .clickable(enabled = enabled, onClick = onClick),
             ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 10.dp)) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 8.dp)) {
                     Text(
-                        text = token.symbol,
-                        fontSize = 28.sp,
+                        text = symbol,
+                        fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -330,19 +465,43 @@ private fun OperatorTokenView(
         else -> {
             Box(
                 modifier = Modifier
-                    .defaultMinSize(minWidth = 28.dp, minHeight = 44.dp)
+                    .defaultMinSize(minWidth = 26.dp, minHeight = 42.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .clickable(enabled = enabled, onClick = onClick),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = token.symbol,
-                    fontSize = 32.sp,
+                    text = symbol,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 4.dp),
+                    color = if (isSolved) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    modifier = Modifier.padding(horizontal = 2.dp),
                 )
             }
         }
+    }
+}
+
+private fun isNodeResolved(
+    node: ExpressionNode,
+    nodeId: String,
+    intermediates: Map<String, Int>,
+): Boolean = node is NumberNode || nodeId in intermediates
+
+private fun needsImplicitParens(
+    parent: BinaryNode,
+    child: ExpressionNode,
+    isRight: Boolean,
+): Boolean {
+    if (child !is BinaryNode || child.explicitParentheses) return false
+    return when {
+        child.operator.precedence < parent.operator.precedence -> true
+        isRight && child.operator.precedence == parent.operator.precedence &&
+            (parent.operator == BinaryOperator.SUBTRACT || parent.operator == BinaryOperator.DIVIDE) -> true
+        else -> false
     }
 }
