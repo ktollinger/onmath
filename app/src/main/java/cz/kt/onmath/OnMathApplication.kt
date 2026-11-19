@@ -1,9 +1,16 @@
 package cz.kt.onmath
 
 import android.app.Application
+import cz.kt.onmath.di.AppContainer
+import cz.kt.onmath.di.AppDataContainer
 
-/**
- * Application entry point for OnMath.
- * Will hold the manual DI container once persistence is added.
- */
-class OnMathApplication : Application()
+class OnMathApplication : Application() {
+
+    lateinit var container: AppContainer
+        private set
+
+    override fun onCreate() {
+        super.onCreate()
+        container = AppDataContainer(this)
+    }
+}
