@@ -53,6 +53,7 @@ fun OnMathNavHost(
                 onDigit = vm::onDigit,
                 onBackspace = vm::onBackspace,
                 onSubmit = vm::onSubmit,
+                onNextProblem = vm::onNextProblem,
                 onHint = vm::onHint,
                 onRestart = vm::startNewSession,
                 onBackClick = { navController.navigateUp() },

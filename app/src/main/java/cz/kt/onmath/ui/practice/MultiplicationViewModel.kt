@@ -12,7 +12,6 @@ import cz.kt.onmath.domain.multiplication.MultiplicationOperation
 import cz.kt.onmath.domain.multiplication.MultiplicationProblem
 import cz.kt.onmath.ui.components.FeedbackState
 import cz.kt.onmath.ui.components.UiText
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -56,7 +55,7 @@ class MultiplicationViewModel(
     }
 
     fun onDigit(digit: Int) {
-        if (_uiState.value.isAdvancing || _uiState.value.isFinished) return
+        if (_uiState.value.isSolved || _uiState.value.isFinished) return
         _uiState.update { state ->
             if (state.inputText.length >= 4) state
             else state.copy(
@@ -67,7 +66,7 @@ class MultiplicationViewModel(
     }
 
     fun onBackspace() {
-        if (_uiState.value.isAdvancing || _uiState.value.isFinished) return
+        if (_uiState.value.isSolved || _uiState.value.isFinished) return
         _uiState.update { state ->
             state.copy(
                 inputText = state.inputText.dropLast(1),
@@ -89,7 +88,11 @@ class MultiplicationViewModel(
 
     fun onSubmit() {
         val state = _uiState.value
-        if (state.isAdvancing || state.isFinished) return
+        if (state.isFinished) return
+        if (state.isSolved) {
+            onNextProblem()
+            return
+        }
         val current = problems.getOrNull(state.currentIndex) ?: return
         val given = state.inputText.toIntOrNull() ?: return
 
@@ -98,13 +101,9 @@ class MultiplicationViewModel(
             _uiState.update {
                 it.copy(
                     correctFirstTry = newCorrectFirstTry,
-                    feedback = FeedbackState.Correct(),
-                    isAdvancing = true,
+                    feedback = FeedbackState.Correct(UiText.Resource(R.string.feedback_correct_inspect)),
+                    isSolved = true,
                 )
-            }
-            viewModelScope.launch {
-                delay(650)
-                advanceToNext(newCorrectFirstTry)
             }
         } else {
             if (!hadMistakeOnCurrent) {
@@ -128,6 +127,14 @@ class MultiplicationViewModel(
         }
     }
 
+    fun onNextProblem() {
+        val state = _uiState.value
+        if (!state.isSolved || state.isFinished) return
+        viewModelScope.launch {
+            advanceToNext(state.correctFirstTry)
+        }
+    }
+
     private suspend fun advanceToNext(correctFirstTry: Int) {
         val nextIndex = _uiState.value.currentIndex + 1
         if (nextIndex >= problems.size) {
@@ -137,7 +144,7 @@ class MultiplicationViewModel(
                 correctFirstTry = correctFirstTry,
             )
             _uiState.update {
-                it.copy(isAdvancing = false, isFinished = true)
+                it.copy(isSolved = false, isFinished = true)
             }
         } else {
             hadMistakeOnCurrent = false
@@ -147,7 +154,7 @@ class MultiplicationViewModel(
                     problemDisplay = problems[nextIndex].displayText,
                     inputText = "",
                     feedback = FeedbackState.None,
-                    isAdvancing = false,
+                    isSolved = false,
                 )
             }
         }

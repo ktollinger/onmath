@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -44,7 +46,7 @@ data class StandardPracticeUiState(
     val totalCount: Int = 10,
     val correctFirstTry: Int = 0,
     val feedback: FeedbackState = FeedbackState.None,
-    val isAdvancing: Boolean = false,
+    val isSolved: Boolean = false,
     val isFinished: Boolean = false,
 )
 
@@ -54,6 +56,7 @@ fun StandardPracticeScreen(
     onDigit: (Int) -> Unit,
     onBackspace: () -> Unit,
     onSubmit: () -> Unit,
+    onNextProblem: () -> Unit,
     onHint: () -> Unit,
     onRestart: () -> Unit,
     onBackClick: () -> Unit,
@@ -138,29 +141,44 @@ fun StandardPracticeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    OutlinedButton(
-                        onClick = onHint,
-                        enabled = !state.isAdvancing,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Lightbulb,
-                            contentDescription = null,
-                            modifier = Modifier.padding(end = 6.dp),
-                        )
-                        Text(stringResource(R.string.action_hint))
+                    if (state.isSolved) {
+                        Button(onClick = onNextProblem) {
+                            Text(stringResource(R.string.action_next_problem))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                modifier = Modifier.padding(start = 6.dp),
+                            )
+                        }
+                    } else {
+                        OutlinedButton(onClick = onHint) {
+                            Icon(
+                                imageVector = Icons.Default.Lightbulb,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 6.dp),
+                            )
+                            Text(stringResource(R.string.action_hint))
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                FeedbackBanner(state = state.feedback)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    FeedbackBanner(state = state.feedback)
+                }
             }
 
             MathKeypad(
                 onDigit = onDigit,
                 onBackspace = onBackspace,
                 onSubmit = onSubmit,
-                submitEnabled = state.inputText.isNotEmpty() && !state.isAdvancing,
+                submitEnabled = state.inputText.isNotEmpty(),
             )
         }
     }
