@@ -11,7 +11,7 @@ struct MultiplicationView: View {
     @State private var correctFirstTry = 0
     @State private var hadMistakeOnCurrent = false
     @State private var feedback: FeedbackState = .none
-    @State private var isAdvancing = false
+    @State private var isSolved = false
     @State private var isFinished = false
 
     private let generator = MultiplicationGenerator()
@@ -51,16 +51,27 @@ struct MultiplicationView: View {
                                     .stroke(AppThemeColors.primaryBlue, lineWidth: 2)
                             )
 
-                        Button(action: showHint) {
-                            Label(store.tr("action_hint"), systemImage: "lightbulb")
-                                .font(.subheadline.weight(.semibold))
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .overlay(
-                                    Capsule().stroke(AppThemeColors.primaryBlue, lineWidth: 1.2)
-                                )
+                        if isSolved {
+                            Button(action: onNextProblem) {
+                                Label(store.tr("action_next_problem"), systemImage: "arrow.right")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 10)
+                                    .background(AppThemeColors.primaryBlue)
+                                    .clipShape(Capsule())
+                            }
+                        } else {
+                            Button(action: showHint) {
+                                Label(store.tr("action_hint"), systemImage: "lightbulb")
+                                    .font(.subheadline.weight(.semibold))
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .overlay(
+                                        Capsule().stroke(AppThemeColors.primaryBlue, lineWidth: 1.2)
+                                    )
+                            }
                         }
-                        .disabled(isAdvancing)
 
                         FeedbackBannerView(state: feedback)
                             .frame(minHeight: 56, alignment: .top)
@@ -73,7 +84,7 @@ struct MultiplicationView: View {
                         onDigit: onDigit,
                         onBackspace: onBackspace,
                         onSubmit: onSubmit,
-                        submitEnabled: !inputText.isEmpty && !isAdvancing
+                        submitEnabled: !inputText.isEmpty
                     )
                     .padding(.horizontal, 16)
                     .padding(.bottom, 12)
@@ -96,19 +107,19 @@ struct MultiplicationView: View {
         correctFirstTry = 0
         hadMistakeOnCurrent = false
         feedback = .none
-        isAdvancing = false
+        isSolved = false
         isFinished = false
     }
 
     private func onDigit(_ digit: Int) {
-        guard !isAdvancing, !isFinished, inputText.count < 4 else { return }
+        guard !isSolved, !isFinished, inputText.count < 4 else { return }
         let next = (inputText + "\(digit)").drop(while: { $0 == "0" })
         inputText = next.isEmpty ? "0" : String(next)
         feedback = .none
     }
 
     private func onBackspace() {
-        guard !isAdvancing, !isFinished, !inputText.isEmpty else { return }
+        guard !isSolved, !isFinished, !inputText.isEmpty else { return }
         inputText.removeLast()
         feedback = .none
     }
@@ -126,17 +137,18 @@ struct MultiplicationView: View {
     }
 
     private func onSubmit() {
-        guard !isAdvancing, !isFinished, problems.indices.contains(currentIndex) else { return }
+        guard !isFinished, problems.indices.contains(currentIndex) else { return }
+        if isSolved {
+            onNextProblem()
+            return
+        }
         guard let given = Int32(inputText) else { return }
         let current = problems[currentIndex]
 
         if given == current.answer {
             if !hadMistakeOnCurrent { correctFirstTry += 1 }
-            feedback = .correct(store.tr("feedback_correct"))
-            isAdvancing = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.65) {
-                advanceToNext()
-            }
+            feedback = .correct(store.tr("feedback_correct_inspect"))
+            isSolved = true
         } else {
             if !hadMistakeOnCurrent {
                 hadMistakeOnCurrent = true
@@ -151,21 +163,22 @@ struct MultiplicationView: View {
         }
     }
 
-    private func advanceToNext() {
+    private func onNextProblem() {
+        guard isSolved, !isFinished else { return }
         if currentIndex + 1 >= problems.count {
             store.recordSession(
                 topic: .multiplication,
                 totalProblems: problems.count,
                 correctFirstTry: correctFirstTry
             )
-            isAdvancing = false
+            isSolved = false
             isFinished = true
         } else {
             currentIndex += 1
             hadMistakeOnCurrent = false
             inputText = ""
             feedback = .none
-            isAdvancing = false
+            isSolved = false
         }
     }
 }
