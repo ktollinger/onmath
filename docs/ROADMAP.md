@@ -9,8 +9,9 @@ Planned improvements for `onmath`, while preserving its core principles: **offli
 - [ ] Wire per-app language switching via `AppCompatDelegate.setApplicationLocales(...)` so language changes apply immediately without changing the device language.
 
 ## 2. Graphics & Visual Identity
-- [ ] Design a custom adaptive app icon (replacing the default template).
+- [x] Design a custom adaptive app icon (replacing the default template). *(Notebook theme)*
 - [ ] Add lightweight vector illustrations / badges on `HomeScreen` and `SessionSummaryView`.
+- [ ] *Suite branding idea:* Unified `O` monogram family across personal apps — e.g. `O+` for OnMath (see [docs/ideas/icon-o-plus.svg](ideas/icon-o-plus.svg)), `O$` / `O€` for OnBudget.
 
 ## 3. Voluntary Quests & Rewards (No Notifications, No Pressure)
 - [ ] Define local milestones in the Room database (e.g. *100 correct multiplication problems*, *Error-free session*, *First parentheses solved*).
