@@ -419,8 +419,8 @@ private struct SubtractionBoardView: View {
                             .frame(width: cellWidth, height: 50)
                             .background(
                                 isWrong
-                                    ? AppThemeColors.errorContainerRed.opacity(0.45)
-                                    : (isActive ? AppThemeColors.primaryContainerBlue.opacity(0.55) : AppThemeColors.surfaceLight)
+                                    ? AppThemeColors.errorRed.opacity(0.20)
+                                    : (isActive ? AppThemeColors.primaryBlue.opacity(0.20) : AppThemeColors.surfaceLight)
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                             .overlay(

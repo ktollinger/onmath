@@ -113,7 +113,7 @@ struct ExpressionsView: View {
                                 .frame(height: compactMode ? 52 : 60)
                                 .background(
                                     selectedNodeId != nil
-                                        ? AppThemeColors.hintContainerAmber.opacity(0.35)
+                                        ? AppThemeColors.hintAmber.opacity(0.18)
                                         : AppThemeColors.surfaceLight
                                 )
                                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))

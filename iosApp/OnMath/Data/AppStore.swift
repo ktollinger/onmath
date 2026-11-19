@@ -13,7 +13,7 @@ enum AppThemeColors {
     static let errorContainerRed = Color(red: 0xFF / 255.0, green: 0xDA / 255.0, blue: 0xD6 / 255.0)
     static let hintAmber = Color(red: 0xB2 / 255.0, green: 0x6A / 255.0, blue: 0x00 / 255.0)
     static let hintContainerAmber = Color(red: 0xFF / 255.0, green: 0xF0 / 255.0, blue: 0xD4 / 255.0)
-    static let surfaceLight = Color(red: 0xF8 / 255.0, green: 0xFA / 255.0, blue: 0xFD / 255.0)
+    static let surfaceLight = Color(.secondarySystemBackground)
 }
 
 enum L10n {
