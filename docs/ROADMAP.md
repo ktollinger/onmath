@@ -1,25 +1,25 @@
-# Plán rozvoje (Roadmap)
+# Roadmap
 
-Úkolovník budoucích vylepšení pro `onmath` při zachování základních principů: **offline, bez reklam, bez sběru dat, bez notifikací**.
+Planned improvements for `onmath`, while preserving its core principles: **offline, no ads, no data collection, no notifications**.
 
-## 1. Lokalizace (Čeština / Angličtina / Automaticky)
-- [ ] Extrahovat všechny texty z Kotlin souborů (`ui/`) do Android `strings.xml` (`values/` a `values-cs/` / `values-en/`).
-- [ ] Přidat do `AppSettings` a `SettingsRepository` volbu jazyka (`SYSTEM`, `CS`, `EN`).
-- [ ] V `SettingsScreen` nabídnout výběr: *Automaticky (podle systému)*, *Čeština*, *English*.
-- [ ] Napojit přepínání jazyka přes `AppCompatDelegate.setApplicationLocales(...)` tak, aby změna platila okamžitě bez nutnosti měnit jazyk telefonu.
+## 1. Localization (Czech / English / System Default)
+- [ ] Extract all hardcoded Czech strings from Kotlin UI files into Android `strings.xml` (`values/` and `values-cs/` / `values-en/`).
+- [ ] Add a language preference to `AppSettings` and `SettingsRepository` (`SYSTEM`, `CS`, `EN`).
+- [ ] Expose a three-way selector in `SettingsScreen`: *System default*, *Čeština*, *English*.
+- [ ] Wire per-app language switching via `AppCompatDelegate.setApplicationLocales(...)` so language changes apply immediately without changing the device language.
 
-## 2. Grafika a vizuální identita
-- [ ] Navrhnout vlastní adaptive ikonu aplikace (místo výchozí šablony).
-- [ ] Doplnit jednoduché vektorové ilustrace / odznaky na `HomeScreen` a v obrazovce dokončení lekce (`SessionSummaryView`).
+## 2. Graphics & Visual Identity
+- [ ] Design a custom adaptive app icon (replacing the default template).
+- [ ] Add lightweight vector illustrations / badges on `HomeScreen` and `SessionSummaryView`.
 
-## 3. Dobrovolné úkoly a odměny (bez notifikací a nátlaku)
-- [ ] Definovat lokální milníky v Room databázi (např. *100 správných příkladů z násobilky*, *Lekce bez chyby*, *První vyřešené závorky*).
-- [ ] Zobrazit sbírku odznaků / samolepek v aplikaci jako čistě dobrovolnou motivaci — bez notifikací, bez trestání za přestávku (žádné denní streaky) a bez online žebříčků.
+## 3. Voluntary Quests & Rewards (No Notifications, No Pressure)
+- [ ] Define local milestones in the Room database (e.g. *100 correct multiplication problems*, *Error-free session*, *First parentheses solved*).
+- [ ] Display a collectible badge / sticker shelf inside the app as purely voluntary motivation — no notifications, no punishing daily streaks, and no online leaderboards.
 
-## 4. Verze pro iOS (iPhone 16 Pro, iPhone SE 2022)
-- [ ] Vydělit `domain/` do sdíleného Kotlin Multiplatform (KMP) modulu (`shared`).
-- [ ] Postavit nativní SwiftUI rozhraní optimalizované i pro menší displej iPhone SE 2022 (kompaktní `MathKeypad` a strom výrazů).
-- [ ] Lokální ukládání výsledků a nastavení na iOS (`UserDefaults` + SwiftData/SQLite).
+## 4. iOS Port (iPhone 16 Pro, iPhone SE 2022)
+- [ ] Extract `domain/` into a shared Kotlin Multiplatform (KMP) module (`shared`).
+- [ ] Build a native SwiftUI interface tuned for smaller screens like iPhone SE 2022 as well (compact `MathKeypad` and expression tree spacing).
+- [ ] Implement local persistence on iOS (`UserDefaults` + SwiftData/SQLite).
 
-## 5. Dobrovolná podpora („Kafe pro vývojáře“)
-- [ ] Přidat do Nastavení / „O aplikaci“ (za jednoduchý rodičovský zámek, např. těžší příklad) volitelný *Tip Jar* přes nativní Google Play Billing / StoreKit 2, aby aplikace zůstala v souladu s pravidly obchodů i bez reklam a sledování.
+## 5. Optional Support ("Buy Me a Coffee")
+- [ ] Add an optional *Tip Jar* in Settings / About (behind a simple parental gate, such as a harder math problem) using native Google Play Billing / StoreKit 2, keeping the app compliant with store policies and free of ads or tracking.

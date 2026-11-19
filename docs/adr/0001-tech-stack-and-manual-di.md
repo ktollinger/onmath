@@ -1,4 +1,4 @@
-# ADR 0001: Technologický stack a manuální Dependency Injection
+# ADR 0001: Tech Stack and Manual Dependency Injection
 
 - **Status:** Accepted
 - **Date:** 2026-11-19
@@ -6,29 +6,29 @@
 
 ## Context and Problem Statement
 
-Vytváříme novou Android aplikaci `OnMath` pro procvičování matematiky na 1. stupni ZŠ. Vývojář má dlouholeté zkušenosti s Javou a starším Androidem (View/XML), ale nikoliv s moderním Kotlinem a Jetpack Compose. Cílem je zvolit takovou architekturu, která bude moderní, udržitelná a zároveň snadno čitelná a pochopitelná při přechodu z Javy — po vzoru referenčního projektu `onbudget` (větev `refactor/6-ui-architecture`).
+We are building a new Android app `OnMath` for elementary school math practice. The developer has extensive experience with Java and classic Android (Views/XML), but is newer to modern Kotlin and Jetpack Compose. The goal is to choose an architecture that is modern, maintainable, and easy to read and trace when transitioning from Java — following the reference project `onbudget` (`refactor/6-ui-architecture` branch).
 
 ## Decision Drivers
 
-- Konzistence s projektem `onbudget` (stejné knihovny, verze Gradle/Kotlin/Compose).
-- Přehlednost bez skryté „magie“ generovaného kódu (snadné trasování závislostí z pohledu Java vývojáře).
-- Rychlý vývoj deklarativního UI pro interaktivní matematické obrazovky.
+- Consistency with `onbudget` (same libraries, Gradle/Kotlin/Compose versions).
+- Clarity without hidden code-generation "magic" (easy dependency tracing for a Java developer).
+- Fast declarative UI iteration for interactive math screens.
 
 ## Proposed Decision
 
-- **Jazyk a UI:** Kotlin + Jetpack Compose (Material 3), Navigation Compose (`NavHost` + oddělený scaffold).
-- **Platforma:** Android (`minSdk = 31`, `compileSdk = 35`, `targetSdk = 35`, Java 17 bytecode).
-- **Dependency Injection:** Manuální DI pomocí rozhraní `AppContainer` / `AppDataContainer` a centrální `AppViewModelProvider.Factory` (stejný vzor jako v `onbudget`).
-- **Stav obrazovek:** `ViewModel` + `StateFlow` s jednosměrným tokem dat (UDF).
+- **Language & UI:** Kotlin + Jetpack Compose (Material 3), Navigation Compose (`NavHost` + separate scaffolds).
+- **Platform:** Android (`minSdk = 31`, `compileSdk = 35`, `targetSdk = 35`, Java 17 bytecode).
+- **Dependency Injection:** Manual DI via `AppContainer` / `AppDataContainer` interfaces and a central `AppViewModelProvider.Factory` (same pattern as `onbudget`).
+- **Screen State:** `ViewModel` + `StateFlow` with unidirectional data flow (UDF).
 
 ## Alternatives Considered
 
 ### Alternative 1: Hilt / Dagger DI
 
-- **Pros:** Standard v enterprise Androidu, méně ručního psaní factory tříd.
-- **Cons:** Další vrstva anotací, KSP generování a obtížnější ladění pro menší projekt; zbytečná komplexita oproti několika ViewModelům.
+- **Pros:** Enterprise Android standard, less manual factory boilerplate.
+- **Cons:** Extra annotation/KSP layer and harder debugging for a small project; unnecessary complexity for a handful of ViewModels.
 
-### Alternative 2: Klasické Android Views + XML v Javě
+### Alternative 2: Classic Android Views + XML in Java
 
-- **Pros:** Známé prostředí ze staršího Androidu.
-- **Cons:** Výrazně pracnější tvorba interaktivního UI (např. dynamické sloupce odčítání pod sebou s přenosy a vlastní klávesnice).
+- **Pros:** Familiar from older Android development.
+- **Cons:** Much more boilerplate for interactive UI (e.g., dynamic column subtraction boards with borrow markers and custom keypads).

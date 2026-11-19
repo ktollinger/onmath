@@ -1,41 +1,41 @@
 # OnMath
 
-Offline Android aplikace v Kotlinu a Jetpack Compose pro procvičování matematiky na úrovni 4. třídy ZŠ — bez reklam, bez sběru dat, bez účtů a bez notifikací.
+An offline Android app built with Kotlin and Jetpack Compose for practicing 4th-grade elementary math — with no ads, no data collection, no accounts, and no notifications.
 
-## Hlavní funkce
+## Features
 
-- **Písemné odčítání pod sebou** (`2–6` cifer)
-  - Podpora dvou metod přenosu: půjčování nahoře (Montessori / anglosaský zápis) i přenos dole (český školní zápis).
-  - Zadávání výsledku zprava doleva pomocí vestavěné numerické klávesnice, nápověda ke konkrétnímu řádu a ruční potvrzení přechodu na další příklad.
-- **Násobilka a dělení**
-  - Výběr konkrétních řad (`1–10`) a volitelné zapnutí dělení v rámci násobilky.
-- **Výrazy a priority operací**
-  - Příklady se závorkami i bez závorek, s přepínačem obtížnosti (do `10 × 10` vs. těžší násobení typu `18 × 3`).
-  - **Interaktivní mezivýsledky jako na papíře:** původní zadání zůstává viditelné, dítě si může klepnutím na operátor zapsat mezivýsledek pod příslušný podvýraz a plynule pokračovat dalším operátorem. Mezivýsledky jsou volitelné.
-- **Lokální statistiky a chyby**
-  - Úspěšnost lekcí a přehled chyb ukládané čistě lokálně (Room + DataStore).
+- **Column Subtraction** (`2–6` digits)
+  - Supports two borrowing/carrying notations: borrowing from the top (Montessori / Anglo-Saxon notation) and carrying at the bottom (traditional Czech school notation).
+  - Right-to-left digit entry via a custom in-app numeric keypad, place-specific hints, and manual confirmation before advancing to the next problem.
+- **Multiplication & Division**
+  - Selectable multiplication tables (`1–10`) and an optional toggle to include division within the selected tables.
+- **Expressions & Order of Operations**
+  - Problems with and without parentheses, plus a difficulty toggle (staying within `10 × 10` vs. larger intermediate multiplications like `18 × 3`).
+  - **Paper-style interactive intermediate results:** the original expression always stays visible; the child can tap any ready operator to jot down an intermediate result directly underneath the sub-expression and seamlessly tap the next operator. Intermediate steps are optional.
+- **Local Progress & Mistake Tracking**
+  - Session accuracy and mistake history stored strictly on-device (Room + DataStore).
 
-## Zásady projektu
+## Principles
 
-- **100% offline:** Aplikace nevyžaduje oprávnění `INTERNET` a nekomunikuje se žádným serverem.
-- **Respekt k dítěti:** Žádné reklamy, žádné notifikace, žádné nátlakové denní streaky.
+- **100% offline:** No `INTERNET` permission and no backend communication.
+- **Child-friendly:** No ads, no notifications, and no manipulative daily streaks.
 
-## Architektura a dokumentace
+## Architecture & Documentation
 
-- `app/src/main/java/cz/kt/onmath/domain/` — čistě kotlinové matematické jádro a generátory příkladů (bez závislostí na Androidu).
-- `app/src/main/java/cz/kt/onmath/data/` — lokální perzistence (Room databáze + Preferences DataStore).
-- `app/src/main/java/cz/kt/onmath/ui/` — Jetpack Compose obrazovky, ViewModely a sdílené komponenty (`MathKeypad`).
-- [Architektonická rozhodnutí (ADR)](docs/adr/)
-- [Plán rozvoje (Roadmap)](docs/ROADMAP.md)
+- `app/src/main/java/cz/kt/onmath/domain/` — pure Kotlin math engine and problem generators (zero Android dependencies).
+- `app/src/main/java/cz/kt/onmath/data/` — local persistence (Room database + Preferences DataStore).
+- `app/src/main/java/cz/kt/onmath/ui/` — Jetpack Compose screens, ViewModels, and shared components (`MathKeypad`).
+- [Architecture Decision Records (ADR)](docs/adr/)
+- [Roadmap](docs/ROADMAP.md)
 
-## Sestavení a testy
+## Build & Test
 
-Požadavky: Android SDK (compileSdk 35, minSdk 31), JDK 17.
+Requirements: Android SDK (`compileSdk = 35`, `minSdk = 31`), JDK 17.
 
 ```bash
 ./gradlew testDebugUnitTest assembleDebug
 ```
 
-## Licence
+## License
 
-Tento projekt je licencován pod licencí [MIT](LICENSE).
+Licensed under the [MIT License](LICENSE).

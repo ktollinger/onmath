@@ -1,4 +1,4 @@
-# ADR 0005: Interaktivní strom výrazů, mezivýsledky a přepínač obtížnosti
+# ADR 0005: Interactive Expression Tree, Intermediate Results, and Difficulty Toggle
 
 - **Status:** Accepted
 - **Date:** 2026-11-19
@@ -6,39 +6,39 @@
 
 ## Context and Problem Statement
 
-1. Pro žáka 4. třídy je obtížné držet v paměti více mezivýsledků najednou (např. `(9 + 9) × 3` nebo `(2 + 3) × 2 + 4 × 5`).
-2. Nahrazení původního podvýrazu v textu (`(14 − 7)` → `7`) sice výraz zkrátí, ale dítě ztrácí přehled o tom, kde původní výraz byl (na papíře zadání negumuje, ale připisuje mezivýsledky pod něj).
-3. Při zadávání mezivýsledku a následném kliknutí na další operátor je nepřirozené muset pokaždé potvrzovat tlačítkem `✓` na klávesnici.
-4. Některé vygenerované příklady vedou na násobení mimo malou násobilku (např. `18 × 3`), což je vhodné mít oddělené jako volitelnou vyšší obtížnost.
+1. For a 4th-grade student, holding multiple intermediate results in working memory (e.g. `(9 + 9) × 3` or `(2 + 3) × 2 + 4 × 5`) is challenging.
+2. Replacing a sub-expression in-place (`(14 − 7)` → `7`) shortens the text, but causes the child to lose visual context of the original problem (on paper, students do not erase the original expression — they write intermediate results underneath it).
+3. Requiring the user to press `✓` on the keypad after entering an intermediate result before tapping the next operator feels unintuitive.
+4. Some generated expressions produce multiplications outside the `10 × 10` table (e.g. `18 × 3`), which are better separated behind an optional higher-difficulty toggle.
 
 ## Decision Drivers
 
-- Zachovat původní zadání výrazu vždy čitelné a na jednom místě.
-- Udržet přehlednost i u příkladů s více mezivýsledky a zabránit vertikálnímu poskakování rozhraní.
-- Nenutit dítě vyplňovat mezivýsledky u triviálních příkladů.
+- Keep the original expression readable and intact at all times.
+- Preserve visual clarity even for multi-step expressions and prevent vertical layout jumping.
+- Never force intermediate steps on trivial expressions.
 
 ## Proposed Decision
 
-- **Vizuální strom výrazu (`ExpressionsScreen`):**
-  - Původní výraz zůstává vždy zobrazený v horní řadě.
-  - Operátory, jejichž oba operandy jsou už vyhodnocené (čísla nebo zapsané mezivýsledky), jsou zvýrazněné jako klikací tlačítka.
-  - Zadané mezivýsledky se vykreslují s podtržením přímo **pod** příslušným podvýrazem v rekurzivní stromové struktuře.
-- **Plynulá interakce (`ExpressionsViewModel` + `ExpressionInteractive`):**
-  - Mezivýsledky jsou volitelné — výchozí fokus je na celkovém výsledku.
-  - Pokud dítě zadá číslici do mezivýsledku a rovnou klepne na další operátor nebo na pole celkového výsledku, rozpracovaný mezivýsledek se automaticky ověří a uloží.
-  - Po vyřešení příkladu zůstává výsledek zobrazený až do ručního potvrzení tlačítkem *Další příklad*.
-- **Obtížnost (`ExpressionGenerator` + `AppSettings`):**
-  - Ve výchozím nastavení (`expressionLargeIntermediate = false`) zůstávají všechna násobení a dělení v rozsahu malé násobilky do `10 × 10`.
-  - Přepínač v nastavení umožňuje zapnout těžší varianty s mezivýsledky nad `10` (např. `18 × 3`).
+- **Paper-style expression tree (`ExpressionsScreen`):**
+  - The original expression always remains visible in the top row.
+  - Operators whose operands are already resolved (numbers or entered intermediates) are highlighted as tappable chips.
+  - Entered intermediate results render with an underline directly **underneath** their corresponding sub-expression in a recursive tree layout.
+- **Fluid interaction (`ExpressionsViewModel` + `ExpressionInteractive`):**
+  - Intermediate steps are optional — focus starts on the final answer box by default.
+  - If the child types a number for an intermediate step and immediately taps the next operator or the final answer box, the pending intermediate is automatically validated and committed.
+  - Once the final answer is solved, the result remains visible until the user taps *Další příklad* (*Next problem*).
+- **Difficulty toggle (`ExpressionGenerator` + `AppSettings`):**
+  - By default (`expressionLargeIntermediate = false`), all multiplications and divisions stay within the `10 × 10` table.
+  - A settings toggle enables harder expressions with intermediate values above `10` (such as `18 × 3`).
 
 ## Alternatives Considered
 
-### Alternative 1: Přepisování původního výrazu v místě (in-place substituce)
+### Alternative 1: In-place substitution of the expression text
 
-- **Pros:** Šetří vertikální prostor.
-- **Cons:** Dítě ztrácí vizuální vazbu na původní zadání a musí si ho číst v odděleném řádku nad příkladem.
+- **Pros:** Saves vertical space.
+- **Cons:** Breaks visual correspondence with the original problem and requires a separate line to repeat the original prompt.
 
-### Alternative 2: Vynucené krokování po operacích bez možnosti zadat rovnou výsledek
+### Alternative 2: Mandatory step-by-step solving before entering the final answer
 
-- **Pros:** Zaručí procvičení pořadí operací u každého příkladu.
-- **Cons:** Zbytečně zdržuje u triviálních příkladů typu `(1 + 1) × 1 − 1 ÷ 1`.
+- **Pros:** Forces explicit order-of-operations steps on every problem.
+- **Cons:** Tedious on trivial expressions such as `(1 + 1) × 1 − 1 ÷ 1`.

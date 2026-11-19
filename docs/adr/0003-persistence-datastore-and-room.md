@@ -1,4 +1,4 @@
-# ADR 0003: Strategie perzistence (Preferences DataStore a Room DB)
+# ADR 0003: Persistence Strategy (Preferences DataStore and Room DB)
 
 - **Status:** Accepted
 - **Date:** 2026-11-19
@@ -6,29 +6,29 @@
 
 ## Context and Problem Statement
 
-Aplikace potřebuje ukládat dva různé druhy dat:
-1. Uživatelská nastavení a preference (např. metoda značení přenosů u odčítání, počet cifer 2–6, předvolby násobilky).
-2. Historii dokončených sad příkladů a evidenci chybovosti jednotlivých příkladů pro sledování pokroku dítěte.
+The app needs to persist two different kinds of data locally:
+1. User settings and preferences (e.g., subtraction borrow notation, digit range 2–6, multiplication table selection).
+2. Completed practice session history and individual mistake records to track the child's progress.
 
 ## Decision Drivers
 
-- Rychlé a bezpečné čtení jednoduchých preferencí přes `Flow`.
-- Strukturované dotazování nad historií lekcí a problematickými příklady.
-- Konzistence s `onbudget` (Room + KSP).
+- Fast, type-safe reactive reading of simple preferences via `Flow`.
+- Structured querying over session history and recurring mistakes.
+- Consistency with `onbudget` (Room + KSP).
 
 ## Proposed Decision
 
-- **Preferences DataStore** (`androidx.datastore:datastore-preferences`) pro uložení nastavení aplikace a preferencí jednotlivých cvičení.
-- **Room Database** pro uložení historie dokončených lekcí (`PracticeSessionEntity`) a záznamů o chybných/problematických příkladech (`MistakeRecordEntity`).
+- **Preferences DataStore** (`androidx.datastore:datastore-preferences`) for app settings and exercise preferences.
+- **Room Database** for completed session history (`PracticeSessionEntity`) and mistake records (`MistakeRecordEntity`).
 
 ## Alternatives Considered
 
-### Alternative 1: Vše v SharedPreferences / JSON souborech
+### Alternative 1: Everything in SharedPreferences / JSON files
 
-- **Pros:** Jednodušší počáteční nastavení.
-- **Cons:** Špatně se filtruje a agreguje úspěšnost po oblastech nebo problematických příkladech v čase.
+- **Pros:** Simpler initial setup.
+- **Cons:** Hard to filter and aggregate accuracy by topic or problematic exercises over time.
 
-### Alternative 2: Vše v Room DB včetně nastavení
+### Alternative 2: Everything in Room DB including settings
 
-- **Pros:** Jediná knihovna pro perzistenci.
-- **Cons:** Zbytečná tabulka pro klíč–hodnota nastavení, která se čtou při každém startu obrazovky.
+- **Pros:** Single persistence library.
+- **Cons:** Unnecessary table boilerplate for simple key-value settings read on every screen start.

@@ -1,4 +1,4 @@
-# ADR 0002: Čistý Kotlin matematický engine oddělený od Androidu
+# ADR 0002: Pure Kotlin Math Engine Decoupled from Android
 
 - **Status:** Accepted
 - **Date:** 2026-11-19
@@ -6,25 +6,25 @@
 
 ## Context and Problem Statement
 
-Aplikace pokrývá tři odlišné matematické oblasti: malou násobilku, výrazy s prioritou operací a závorkami, a písemné odčítání dlouhých čísel (2–6 cifer) s přenosem. Pokud by se generování příkladů, vyhodnocování výrazů a výpočet přenosů míchaly přímo do `ViewModel` nebo Compose komponent, kód by se špatně testoval a snadno by vznikal nekonzistentní stav.
+The app covers three distinct math topics: multiplication tables, expressions with operator precedence and parentheses, and column subtraction of multi-digit numbers (2–6 digits) with borrowing. Mixing problem generation, expression evaluation, and borrow calculation directly into `ViewModel`s or Compose components would make the code hard to test and prone to inconsistent state.
 
 ## Decision Drivers
 
-- 100% deterministické a rychle spustitelné unit testy (JUnit na JVM bez emulátoru).
-- Přehledný doménový kód v čistém Kotlinu (blízký standardní objektové Javě).
-- Záruka pedagogické správnosti generovaných příkladů (např. dělení vždy beze zbytku, nezáporné mezivýsledky, skutečný výskyt přenosu u odčítání).
+- 100% deterministic and fast unit tests (JUnit on JVM without an emulator).
+- Clean domain code in pure Kotlin (close to standard object-oriented Java).
+- Guaranteed pedagogical validity of generated problems (e.g., exact integer division, non-negative intermediate values, actual borrows in subtraction).
 
 ## Proposed Decision
 
-Veškerá matematická logika je izolována v balíčku `cz.kt.onmath.domain` bez jakýchkoliv závislostí na `android.*` nebo `androidx.compose.*`:
+All math logic is isolated in the `cz.kt.onmath.domain` package with zero dependencies on `android.*` or `androidx.compose.*`:
 
-- **Generátory úloh** pro každou oblast (`MultiplicationGenerator`, `ExpressionGenerator`, `SubtractionGenerator`).
-- **Vyhodnocovač výrazů a kroků** (AST / parser respektující priority `*`, `/` nad `+`, `-` a závorky) umožňující nejen spočítat výsledek, ale i určit další krok pro nápovědu.
-- **Model písemného odčítání** reprezentující jednotlivé řády zprava doleva, očekávané cifry výsledku i místa, kde dochází k přenosu.
+- **Problem generators** for each topic (`MultiplicationGenerator`, `ExpressionGenerator`, `SubtractionGenerator`).
+- **Expression evaluator and step analyzer** (AST / parser respecting `*`, `/` precedence over `+`, `-` and parentheses) capable of computing both the final answer and the next hint step.
+- **Column subtraction model** representing place values right-to-left, expected result digits, and borrow locations.
 
 ## Alternatives Considered
 
-### Alternative 1: Logika přímo ve ViewModelech
+### Alternative 1: Logic directly inside ViewModels
 
-- **Pros:** Méně souborů na začátku.
-- **Cons:** Nutnost mockovat Android/Coroutines/DB při testování matematických pravidel, horší znovupoužitelnost.
+- **Pros:** Fewer files initially.
+- **Cons:** Requires mocking Android/Coroutines/DB to test math rules; poor reusability (e.g., for a future KMP/iOS port).
