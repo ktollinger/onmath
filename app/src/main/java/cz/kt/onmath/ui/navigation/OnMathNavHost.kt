@@ -1,24 +1,20 @@
 package cz.kt.onmath.ui.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import cz.kt.onmath.ui.AppViewModelProvider
 import cz.kt.onmath.ui.home.HomeScreen
+import cz.kt.onmath.ui.practice.ExpressionsViewModel
+import cz.kt.onmath.ui.practice.MultiplicationViewModel
+import cz.kt.onmath.ui.practice.StandardPracticeScreen
+import cz.kt.onmath.ui.practice.subtraction.SubtractionScreen
 import cz.kt.onmath.ui.settings.SettingsScreen
 
 @Composable
@@ -49,56 +45,37 @@ fun OnMathNavHost(
         }
 
         composable(OnMathScreens.Multiplication.route) {
-            PracticePlaceholderScreen(
-                title = "Násobilka",
+            val vm: MultiplicationViewModel = viewModel(factory = AppViewModelProvider.Factory)
+            val state by vm.uiState.collectAsStateWithLifecycle()
+            StandardPracticeScreen(
+                state = state,
+                onDigit = vm::onDigit,
+                onBackspace = vm::onBackspace,
+                onSubmit = vm::onSubmit,
+                onHint = vm::onHint,
+                onRestart = vm::startNewSession,
                 onBackClick = { navController.navigateUp() },
             )
         }
 
         composable(OnMathScreens.Expressions.route) {
-            PracticePlaceholderScreen(
-                title = "Výrazy a závorky",
+            val vm: ExpressionsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+            val state by vm.uiState.collectAsStateWithLifecycle()
+            StandardPracticeScreen(
+                state = state,
+                onDigit = vm::onDigit,
+                onBackspace = vm::onBackspace,
+                onSubmit = vm::onSubmit,
+                onHint = vm::onHint,
+                onRestart = vm::startNewSession,
                 onBackClick = { navController.navigateUp() },
             )
         }
 
         composable(OnMathScreens.Subtraction.route) {
-            PracticePlaceholderScreen(
-                title = "Odčítání pod sebou",
+            SubtractionScreen(
                 onBackClick = { navController.navigateUp() },
             )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun PracticePlaceholderScreen(
-    title: String,
-    onBackClick: () -> Unit,
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(title) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zpět",
-                        )
-                    }
-                },
-            )
-        },
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("$title – připravuje se")
         }
     }
 }

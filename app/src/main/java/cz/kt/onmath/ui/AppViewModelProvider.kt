@@ -6,6 +6,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import cz.kt.onmath.OnMathApplication
 import cz.kt.onmath.ui.home.HomeViewModel
+import cz.kt.onmath.ui.practice.ExpressionsViewModel
+import cz.kt.onmath.ui.practice.MultiplicationViewModel
+import cz.kt.onmath.ui.practice.subtraction.SubtractionViewModel
 import cz.kt.onmath.ui.settings.SettingsViewModel
 
 /**
@@ -24,6 +27,30 @@ object AppViewModelProvider {
         initializer {
             val container = onMathApplication().container
             SettingsViewModel(
+                settingsRepository = container.settingsRepository,
+                practiceRepository = container.practiceRepository,
+            )
+        }
+
+        initializer {
+            val container = onMathApplication().container
+            MultiplicationViewModel(
+                settingsRepository = container.settingsRepository,
+                practiceRepository = container.practiceRepository,
+            )
+        }
+
+        initializer {
+            val container = onMathApplication().container
+            ExpressionsViewModel(
+                settingsRepository = container.settingsRepository,
+                practiceRepository = container.practiceRepository,
+            )
+        }
+
+        initializer {
+            val container = onMathApplication().container
+            SubtractionViewModel(
                 settingsRepository = container.settingsRepository,
                 practiceRepository = container.practiceRepository,
             )
