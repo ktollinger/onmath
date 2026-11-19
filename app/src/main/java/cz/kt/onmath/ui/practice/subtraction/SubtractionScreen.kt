@@ -113,9 +113,9 @@ fun SubtractionScreen(
 
                 Text(
                     text = if (state.method == SubtractionMethod.BORROW_TOP) {
-                        "Tip: Ťuknutím nad horní cifru si můžeš označit půjčení"
+                        "Tip: Ťukni na horní cifru nebo nad ni pro označení půjčení"
                     } else {
-                        "Tip: Ťuknutím u dolní cifry si můžeš označit jedničku"
+                        "Tip: Ťukni na dolní cifru pro označení přenesené jedničky"
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -183,16 +183,20 @@ private fun ColumnSubtractionBoard(
             Spacer(modifier = Modifier.height(2.dp))
         }
 
-        // 2. Minuend row (horní číslo)
+        // 2. Minuend row (horní číslo - v režimu BORROW_TOP klikatelné pro označení půjčení)
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Spacer(modifier = Modifier.width(28.dp))
             columnsLeftToRight.forEach { col ->
-                val crossedOut = method == SubtractionMethod.BORROW_TOP && col.placeIndex in markedBorrows
+                val canLend = method == SubtractionMethod.BORROW_TOP && col.placeIndex > 0
+                val crossedOut = canLend && col.placeIndex in markedBorrows
                 Box(
-                    modifier = Modifier.width(cellWidth),
+                    modifier = Modifier
+                        .width(cellWidth)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(enabled = canLend) { onToggleBorrow(col.placeIndex) },
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -331,14 +335,26 @@ private fun BorrowTopCell(
         onClick = onClick,
         enabled = canLend,
         shape = RoundedCornerShape(8.dp),
-        color = if (isMarked) HintContainerAmber else MaterialTheme.colorScheme.surface,
-        modifier = Modifier.size(width = cellWidth, height = 28.dp),
+        border = if (canLend) {
+            BorderStroke(
+                width = 1.dp,
+                color = if (isMarked) HintAmber else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+            )
+        } else {
+            null
+        },
+        color = when {
+            !canLend -> MaterialTheme.colorScheme.surface
+            isMarked -> HintContainerAmber
+            else -> MaterialTheme.colorScheme.surfaceContainerLow
+        },
+        modifier = Modifier.size(width = cellWidth, height = 30.dp),
     ) {
         Box(contentAlignment = Alignment.Center) {
             if (canLend) {
                 Text(
-                    text = if (isMarked) decremented.toString() else "·",
-                    fontSize = 16.sp,
+                    text = if (isMarked) decremented.toString() else "−1",
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isMarked) HintAmber else MaterialTheme.colorScheme.outlineVariant,
                 )
