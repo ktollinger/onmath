@@ -14,3 +14,7 @@ local.properties
 xcuserdata/
 *.xcuserstate
 DerivedData/
+
+# Web app
+webApp/node_modules/
+webApp/dist/

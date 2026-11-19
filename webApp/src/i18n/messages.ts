@@ -1,0 +1,203 @@
+import type { AppLanguage } from '../domain/models';
+
+const en = {
+  appName: 'OnMath',
+  settingsTitle: 'Settings',
+  back: 'Back',
+
+  homeSubtitle: 'Choose what to practice',
+  topicMultiplication: 'Multiplication',
+  topicExpressions: 'Expressions & Parentheses',
+  topicSubtraction: 'Column Subtraction',
+  homeTablesAll: 'Tables 1–10',
+  homeTablesSelected: 'Tables: {0}',
+  homeWithDivision: ' + division',
+  homeExprWithParens: 'Order of operations with parentheses',
+  homeExprWithoutParens: 'Order of operations without parentheses',
+  homeMethodBorrowTop: 'Montessori (borrow from top)',
+  homeMethodCarryBottom: 'School (carry to bottom)',
+  homeSubtractionSubtitle: '{0}–{1} digits • {2}',
+  homeTopicStats: 'Sessions: {0} • Accuracy: {1}%',
+  homeRecentMistakes: 'Recent mistakes to review',
+  homeCorrectAnswer: 'correct {0}',
+
+  settingsLanguageSection: 'Language',
+  settingsLanguageSystem: 'Automatic',
+  settingsLanguageCzech: 'Čeština',
+  settingsLanguageEnglish: 'English',
+  settingsThemeSection: 'Theme',
+  settingsThemeSystem: 'Automatic',
+  settingsThemeLight: 'Light',
+  settingsThemeDark: 'Dark',
+  settingsSubtractionSection: 'Column Subtraction',
+  settingsSubtractionMethod: 'Borrow / carry notation',
+  settingsMethodBorrowTopTitle: 'Montessori / Anglo-Saxon method',
+  settingsMethodBorrowTopSubtitle: 'Borrow from a higher place (cross out and decrement top digit)',
+  settingsMethodCarryBottomTitle: 'Traditional Czech school method',
+  settingsMethodCarryBottomSubtitle: 'Add 10 on top and carry 1 to the bottom subtrahend',
+  settingsDigitCount: 'Number of digits: {0} to {1}',
+  settingsMinDigits: 'Minimum digits',
+  settingsMaxDigits: 'Maximum digits',
+  settingsMultiplicationSection: 'Multiplication',
+  settingsSelectedTables: 'Selected tables',
+  settingsSelectAll: 'Select all',
+  settingsIncludeDivision: 'Include division within tables',
+  settingsExpressionsSection: 'Expressions & Order of Operations',
+  settingsUseParentheses: 'Use parentheses',
+  settingsLargeIntermediate: 'Higher difficulty (multiply > 10, e.g. 18 × 3)',
+  settingsHistorySection: 'History',
+  settingsClearHistory: 'Clear history and statistics',
+
+  feedbackCorrectInspect: 'Correct! Review the result and continue.',
+  actionHint: 'Hint',
+  actionHintColumn: 'Place hint',
+  actionNextProblem: 'Next problem',
+  actionUndoStep: 'Undo step',
+  summaryTitle: 'Lesson complete!',
+  summaryFirstTry: 'correct on first try ({0}%)',
+  summaryRestart: 'Practice another set',
+  summaryBackHome: 'Back to topic selection',
+
+  multWrong: 'Not quite, try again.',
+  multHintMultiply: '{0} × {1} means adding {1} together {0} times.',
+  multHintDivide: 'How many times does {0} fit into {1}? ({0} × ? = {1})',
+
+  exprTipTapOperator: 'Tap an operator to jot down an intermediate result',
+  exprLabelIntermediate: 'Intermediate: {0}',
+  exprLabelFinal: 'Final answer',
+  exprBackToFinal: 'Back to final answer',
+  exprWrongOrder: 'Check the order of operations and try again.',
+  exprWrongIntermediate: 'Intermediate result for {0} does not match, try again.',
+  exprNeedInnerFirst: 'Solve the sub-expression in parentheses or ×/÷ first.',
+  exprHintSolve: 'Calculate the result.',
+  exprHintParens: 'Solve parentheses first: {0}',
+  exprHintPrecedence: 'Multiplication and division come first: {0}',
+  exprHintLeftToRight: 'Go from left to right: {0}',
+
+  subTipBorrowTop: 'Tip: Tap a top digit or above it to mark a borrow',
+  subTipCarryBottom: 'Tip: Tap a bottom digit to mark a carried 1',
+  subWrongColumns: 'Check the highlighted columns.',
+  subHintBorrowTopWithBorrow: '{0}: Borrow 1 from the next place → {1} − {2} = {3}.',
+  subHintBorrowTopPlain: '{0}: {1} − {2} = {3}.',
+  subHintCarryBottomWithCarry: '{0}: Add 10 → {1} − {2} = {3} (and carry 1 to the next place).',
+  subHintCarryBottomPlain: '{0}: {1} − {2} = {3}.',
+  placeOnes: 'Ones',
+  placeTens: 'Tens',
+  placeHundreds: 'Hundreds',
+  placeThousands: 'Thousands',
+  placeTenThousands: 'Ten thousands',
+  placeHundredThousands: 'Hundred thousands',
+  placeOther: 'Place {0}',
+} as const;
+
+export type MessageKey = keyof typeof en;
+
+const cs: Record<MessageKey, string> = {
+  appName: 'OnMath',
+  settingsTitle: 'Nastavení',
+  back: 'Zpět',
+
+  homeSubtitle: 'Vyber si, co chceš procvičovat',
+  topicMultiplication: 'Násobilka',
+  topicExpressions: 'Výrazy a závorky',
+  topicSubtraction: 'Odčítání pod sebou',
+  homeTablesAll: 'Řady 1–10',
+  homeTablesSelected: 'Řady: {0}',
+  homeWithDivision: ' + dělení',
+  homeExprWithParens: 'Priorita operací se závorkami',
+  homeExprWithoutParens: 'Priorita operací bez závorek',
+  homeMethodBorrowTop: 'Montessori (půjčení nahoře)',
+  homeMethodCarryBottom: 'Školní (jednička dolů)',
+  homeSubtractionSubtitle: '{0}–{1} cifer • {2}',
+  homeTopicStats: 'Lekcí: {0} • Úspěšnost: {1} %',
+  homeRecentMistakes: 'Poslední chybičky k připomenutí',
+  homeCorrectAnswer: 'správně {0}',
+
+  settingsLanguageSection: 'Jazyk',
+  settingsLanguageSystem: 'Automaticky',
+  settingsLanguageCzech: 'Čeština',
+  settingsLanguageEnglish: 'English',
+  settingsThemeSection: 'Téma',
+  settingsThemeSystem: 'Automaticky',
+  settingsThemeLight: 'Světlé',
+  settingsThemeDark: 'Tmavé',
+  settingsSubtractionSection: 'Odčítání pod sebou',
+  settingsSubtractionMethod: 'Způsob značení přenosů',
+  settingsMethodBorrowTopTitle: 'Montessori / anglosaský způsob',
+  settingsMethodBorrowTopSubtitle: 'Půjčení z vyššího řádu (škrtání a snížení horní cifry)',
+  settingsMethodCarryBottomTitle: 'Český školní způsob',
+  settingsMethodCarryBottomSubtitle: 'Přičtení 10 nahoře a přenesení jedničky dolů k menšiteli',
+  settingsDigitCount: 'Počet cifer: {0} až {1}',
+  settingsMinDigits: 'Minimum cifer',
+  settingsMaxDigits: 'Maximum cifer',
+  settingsMultiplicationSection: 'Násobilka',
+  settingsSelectedTables: 'Vybrané řady',
+  settingsSelectAll: 'Vybrat vše',
+  settingsIncludeDivision: 'Zahrnout dělení v rámci násobilky',
+  settingsExpressionsSection: 'Výrazy a priority operací',
+  settingsUseParentheses: 'Používat závorky',
+  settingsLargeIntermediate: 'Vyšší obtížnost (násobení nad 10, např. 18 × 3)',
+  settingsHistorySection: 'Historie',
+  settingsClearHistory: 'Vymazat historii a statistiky',
+
+  feedbackCorrectInspect: 'Správně! Prohlédni si výsledek a pokračuj.',
+  actionHint: 'Nápověda',
+  actionHintColumn: 'Nápověda k řádu',
+  actionNextProblem: 'Další příklad',
+  actionUndoStep: 'Zpět krok',
+  summaryTitle: 'Lekce dokončena!',
+  summaryFirstTry: 'správně na první pokus ({0} %)',
+  summaryRestart: 'Procvičit další sadu',
+  summaryBackHome: 'Zpět na výběr oblasti',
+
+  multWrong: 'To není ono, zkus to znovu.',
+  multHintMultiply: '{0} × {1} znamená {0}krát sečíst číslo {1}.',
+  multHintDivide: 'Kolikrát se vejde {0} do {1}? ({0} × ? = {1})',
+
+  exprTipTapOperator: 'Klepni na znaménko pro zápis mezivýsledku',
+  exprLabelIntermediate: 'Mezivýsledek: {0}',
+  exprLabelFinal: 'Celkový výsledek',
+  exprBackToFinal: 'Zpět k celkovému výsledku',
+  exprWrongOrder: 'Zkus zkontrolovat pořadí operací.',
+  exprWrongIntermediate: 'Mezivýsledek pro {0} nesedí, zkus to znovu.',
+  exprNeedInnerFirst: 'Nejdřív spočítej podvýraz v závorce nebo násobení/dělení.',
+  exprHintSolve: 'Spočítej výsledek.',
+  exprHintParens: 'Nejdřív spočítej závorku: {0}',
+  exprHintPrecedence: 'Násobení a dělení mají přednost: {0}',
+  exprHintLeftToRight: 'Postupuj zleva doprava: {0}',
+
+  subTipBorrowTop: 'Tip: Ťukni na horní cifru nebo nad ni pro označení půjčení',
+  subTipCarryBottom: 'Tip: Ťukni na dolní cifru pro označení přenesené jedničky',
+  subWrongColumns: 'Zkontroluj zvýrazněné sloupce.',
+  subHintBorrowTopWithBorrow: '{0}: Půjč si 1 z vyššího řádu → {1} − {2} = {3}.',
+  subHintBorrowTopPlain: '{0}: {1} − {2} = {3}.',
+  subHintCarryBottomWithCarry: '{0}: Přičti 10 → {1} − {2} = {3} (a 1 jde dolů do dalšího řádu).',
+  subHintCarryBottomPlain: '{0}: {1} − {2} = {3}.',
+  placeOnes: 'Jednotky',
+  placeTens: 'Desítky',
+  placeHundreds: 'Stovky',
+  placeThousands: 'Tisíce',
+  placeTenThousands: 'Desetitisíce',
+  placeHundredThousands: 'Statisíce',
+  placeOther: 'Řád {0}',
+};
+
+export function resolveLocale(language: AppLanguage): 'cs' | 'en' {
+  if (language === 'CZECH') return 'cs';
+  if (language === 'ENGLISH') return 'en';
+  const navLang = typeof navigator !== 'undefined' ? navigator.language.toLowerCase() : 'en';
+  return navLang.startsWith('cs') ? 'cs' : 'en';
+}
+
+export function translate(
+  language: AppLanguage,
+  key: MessageKey,
+  ...args: Array<string | number>
+): string {
+  const dict = resolveLocale(language) === 'cs' ? cs : en;
+  let template: string = dict[key];
+  args.forEach((arg, index) => {
+    template = template.replaceAll(`{${index}}`, String(arg));
+  });
+  return template;
+}

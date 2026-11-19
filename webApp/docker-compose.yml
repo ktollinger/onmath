@@ -1,0 +1,8 @@
+services:
+  onmath-web:
+    build:
+      context: .
+    container_name: onmath-web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
