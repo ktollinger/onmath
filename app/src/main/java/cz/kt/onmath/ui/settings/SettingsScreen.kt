@@ -31,10 +31,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import cz.kt.onmath.R
+import cz.kt.onmath.domain.model.AppLanguage
 import cz.kt.onmath.domain.model.SubtractionMethod
 import cz.kt.onmath.ui.AppViewModelProvider
 
@@ -51,12 +54,12 @@ fun SettingsScreen(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text("Nastavení", fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(R.string.settings_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Zpět",
+                            contentDescription = stringResource(R.string.back),
                         )
                     }
                 },
@@ -71,30 +74,51 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            SectionTitle("Odčítání pod sebou")
+            SectionTitle(stringResource(R.string.settings_language_section))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                val options = listOf(
+                    AppLanguage.SYSTEM to R.string.settings_language_system,
+                    AppLanguage.CZECH to R.string.settings_language_czech,
+                    AppLanguage.ENGLISH to R.string.settings_language_english,
+                )
+                options.forEach { (lang, labelRes) ->
+                    FilterChip(
+                        selected = settings.language == lang,
+                        onClick = { viewModel.setLanguage(lang) },
+                        label = { Text(stringResource(labelRes)) },
+                    )
+                }
+            }
+
+            HorizontalDivider()
+            SectionTitle(stringResource(R.string.settings_subtraction_section))
 
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = "Způsob značení přenosů",
+                    text = stringResource(R.string.settings_subtraction_method),
                     style = MaterialTheme.typography.titleSmall,
                 )
                 MethodOptionRow(
                     selected = settings.subtractionMethod == SubtractionMethod.BORROW_TOP,
-                    title = "Montessori / anglosaský způsob",
-                    subtitle = "Půjčení z vyššího řádu (škrtání a snížení horní cifry)",
+                    title = stringResource(R.string.settings_method_borrow_top_title),
+                    subtitle = stringResource(R.string.settings_method_borrow_top_subtitle),
                     onClick = { viewModel.setSubtractionMethod(SubtractionMethod.BORROW_TOP) },
                 )
                 MethodOptionRow(
                     selected = settings.subtractionMethod == SubtractionMethod.CARRY_BOTTOM,
-                    title = "Český školní způsob",
-                    subtitle = "Přičtení 10 nahoře a přenesení jedničky dolů k menšiteli",
+                    title = stringResource(R.string.settings_method_carry_bottom_title),
+                    subtitle = stringResource(R.string.settings_method_carry_bottom_subtitle),
                     onClick = { viewModel.setSubtractionMethod(SubtractionMethod.CARRY_BOTTOM) },
                 )
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = "Počet cifer: ${settings.subtractionMinDigits} až ${settings.subtractionMaxDigits}",
+                    text = stringResource(R.string.settings_digit_count, settings.subtractionMinDigits, settings.subtractionMaxDigits),
                     style = MaterialTheme.typography.titleSmall,
                 )
                 Row(
@@ -102,7 +126,7 @@ fun SettingsScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("Minimum cifer")
+                    Text(stringResource(R.string.settings_min_digits))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         (2..5).forEach { count ->
                             FilterChip(
@@ -121,7 +145,7 @@ fun SettingsScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("Maximum cifer")
+                    Text(stringResource(R.string.settings_max_digits))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         (2..6).forEach { count ->
                             FilterChip(
@@ -138,16 +162,16 @@ fun SettingsScreen(
             }
 
             HorizontalDivider()
-            SectionTitle("Násobilka")
+            SectionTitle(stringResource(R.string.settings_multiplication_section))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Vybrané řady", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.settings_selected_tables), style = MaterialTheme.typography.titleSmall)
                 TextButton(onClick = viewModel::selectAllMultiplicationTables) {
-                    Text("Vybrat vše")
+                    Text(stringResource(R.string.settings_select_all))
                 }
             }
 
@@ -165,34 +189,34 @@ fun SettingsScreen(
             }
 
             SwitchSettingRow(
-                title = "Zahrnout dělení v rámci násobilky",
+                title = stringResource(R.string.settings_include_division),
                 checked = settings.multiplicationIncludeDivision,
                 onCheckedChange = viewModel::setMultiplicationIncludeDivision,
             )
 
             HorizontalDivider()
-            SectionTitle("Výrazy a priority operací")
+            SectionTitle(stringResource(R.string.settings_expressions_section))
 
             SwitchSettingRow(
-                title = "Používat závorky",
+                title = stringResource(R.string.settings_use_parentheses),
                 checked = settings.expressionWithParentheses,
                 onCheckedChange = viewModel::setExpressionWithParentheses,
             )
 
             SwitchSettingRow(
-                title = "Vyšší obtížnost (násobení nad 10, např. 18 × 3)",
+                title = stringResource(R.string.settings_large_intermediate),
                 checked = settings.expressionLargeIntermediate,
                 onCheckedChange = viewModel::setExpressionLargeIntermediate,
             )
 
             HorizontalDivider()
-            SectionTitle("Historie")
+            SectionTitle(stringResource(R.string.settings_history_section))
 
             OutlinedButton(
                 onClick = viewModel::clearHistory,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Vymazat historii a statistiky")
+                Text(stringResource(R.string.settings_clear_history))
             }
 
             Spacer(modifier = Modifier.height(24.dp))

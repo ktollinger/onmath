@@ -69,12 +69,16 @@ data class BinaryNode(
     }
 }
 
-/**
- * Finds the next highest-priority operation to guide the child when asking for a hint.
- */
-fun ExpressionNode.firstStepHint(): String {
+sealed interface ExpressionStepHint {
+    data object SolveDefault : ExpressionStepHint
+    data class Parentheses(val equation: String) : ExpressionStepHint
+    data class Precedence(val equation: String) : ExpressionStepHint
+    data class LeftToRight(val equation: String) : ExpressionStepHint
+}
+
+fun ExpressionNode.firstStepHintInfo(): ExpressionStepHint {
     val firstOp = findFirstOperation(this, insideParens = false)
-        ?: return "Spočítej výsledek."
+        ?: return ExpressionStepHint.SolveDefault
 
     val (node, inParens) = firstOp
     val leftVal = node.left.evaluate()
@@ -83,10 +87,20 @@ fun ExpressionNode.firstStepHint(): String {
     val expr = "$leftVal ${node.operator.symbol} $rightVal = $stepResult"
 
     return when {
-        inParens -> "Nejdřív spočítej závorku: $expr"
-        node.operator.precedence == 2 -> "Násobení a dělení mají přednost: $expr"
-        else -> "Postupuj zleva doprava: $expr"
+        inParens -> ExpressionStepHint.Parentheses(expr)
+        node.operator.precedence == 2 -> ExpressionStepHint.Precedence(expr)
+        else -> ExpressionStepHint.LeftToRight(expr)
     }
+}
+
+/**
+ * Finds the next highest-priority operation to guide the child when asking for a hint.
+ */
+fun ExpressionNode.firstStepHint(): String = when (val info = firstStepHintInfo()) {
+    ExpressionStepHint.SolveDefault -> "Spočítej výsledek."
+    is ExpressionStepHint.Parentheses -> "Nejdřív spočítej závorku: ${info.equation}"
+    is ExpressionStepHint.Precedence -> "Násobení a dělení mají přednost: ${info.equation}"
+    is ExpressionStepHint.LeftToRight -> "Postupuj zleva doprava: ${info.equation}"
 }
 
 private fun findFirstOperation(

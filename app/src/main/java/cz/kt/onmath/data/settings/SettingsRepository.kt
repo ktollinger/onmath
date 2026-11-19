@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import cz.kt.onmath.domain.model.AppLanguage
 import cz.kt.onmath.domain.model.SubtractionMethod
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -17,6 +18,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 interface SettingsRepository {
     val settingsFlow: Flow<AppSettings>
 
+    suspend fun updateLanguage(language: AppLanguage)
     suspend fun updateSubtractionMethod(method: SubtractionMethod)
     suspend fun updateSubtractionDigitRange(minDigits: Int, maxDigits: Int)
     suspend fun updateMultiplicationTables(tables: Set<Int>)
@@ -30,6 +32,7 @@ class DataStoreSettingsRepository(
 ) : SettingsRepository {
 
     private object Keys {
+        val APP_LANGUAGE = stringPreferencesKey("app_language")
         val SUBTRACTION_METHOD = stringPreferencesKey("subtraction_method")
         val SUBTRACTION_MIN_DIGITS = intPreferencesKey("subtraction_min_digits")
         val SUBTRACTION_MAX_DIGITS = intPreferencesKey("subtraction_max_digits")
@@ -40,6 +43,10 @@ class DataStoreSettingsRepository(
     }
 
     override val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { prefs ->
+        val language = prefs[Keys.APP_LANGUAGE]
+            ?.let { runCatching { AppLanguage.valueOf(it) }.getOrNull() }
+            ?: AppLanguage.SYSTEM
+
         val method = prefs[Keys.SUBTRACTION_METHOD]
             ?.let { runCatching { SubtractionMethod.valueOf(it) }.getOrNull() }
             ?: SubtractionMethod.BORROW_TOP
@@ -56,6 +63,7 @@ class DataStoreSettingsRepository(
             ?: (1..10).toSet()
 
         AppSettings(
+            language = language,
             subtractionMethod = method,
             subtractionMinDigits = minDigits,
             subtractionMaxDigits = maxDigits,
@@ -64,6 +72,10 @@ class DataStoreSettingsRepository(
             expressionWithParentheses = prefs[Keys.EXPRESSION_WITH_PARENTHESES] ?: true,
             expressionLargeIntermediate = prefs[Keys.EXPRESSION_LARGE_INTERMEDIATE] ?: false,
         )
+    }
+
+    override suspend fun updateLanguage(language: AppLanguage) {
+        context.dataStore.edit { it[Keys.APP_LANGUAGE] = language.name }
     }
 
     override suspend fun updateSubtractionMethod(method: SubtractionMethod) {

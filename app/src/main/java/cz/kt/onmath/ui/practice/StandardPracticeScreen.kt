@@ -22,18 +22,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cz.kt.onmath.R
 import cz.kt.onmath.ui.components.FeedbackBanner
 import cz.kt.onmath.ui.components.FeedbackState
 import cz.kt.onmath.ui.components.MathKeypad
 import cz.kt.onmath.ui.components.PracticeTopBar
 import cz.kt.onmath.ui.components.SessionSummaryView
+import cz.kt.onmath.ui.components.UiText
+import cz.kt.onmath.ui.components.asString
 
 data class StandardPracticeUiState(
-    val title: String = "",
+    val title: UiText = UiText.Plain(""),
     val problemDisplay: String = "",
     val inputText: String = "",
     val currentIndex: Int = 0,
@@ -55,12 +59,14 @@ fun StandardPracticeScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val resolvedTitle = state.title.asString()
+
     Scaffold(
         modifier = modifier,
         topBar = {
             if (!state.isFinished) {
                 PracticeTopBar(
-                    title = state.title,
+                    title = resolvedTitle,
                     currentIndex = state.currentIndex,
                     totalCount = state.totalCount,
                     onBackClick = onBackClick,
@@ -70,7 +76,7 @@ fun StandardPracticeScreen(
     ) { padding ->
         if (state.isFinished) {
             SessionSummaryView(
-                topicTitle = state.title,
+                topicTitle = resolvedTitle,
                 correctFirstTry = state.correctFirstTry,
                 totalProblems = state.totalCount,
                 onRestart = onRestart,
@@ -141,7 +147,7 @@ fun StandardPracticeScreen(
                             contentDescription = null,
                             modifier = Modifier.padding(end = 6.dp),
                         )
-                        Text("Nápověda")
+                        Text(stringResource(R.string.action_hint))
                     }
                 }
 

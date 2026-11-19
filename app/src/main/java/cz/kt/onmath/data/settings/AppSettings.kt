@@ -1,8 +1,10 @@
 package cz.kt.onmath.data.settings
 
+import cz.kt.onmath.domain.model.AppLanguage
 import cz.kt.onmath.domain.model.SubtractionMethod
 
 data class AppSettings(
+    val language: AppLanguage = AppLanguage.SYSTEM,
     val subtractionMethod: SubtractionMethod = SubtractionMethod.BORROW_TOP,
     val subtractionMinDigits: Int = 2,
     val subtractionMaxDigits: Int = 6,

@@ -29,10 +29,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cz.kt.onmath.R
 import cz.kt.onmath.ui.theme.CorrectContainerGreen
 import cz.kt.onmath.ui.theme.CorrectGreen
 import cz.kt.onmath.ui.theme.ErrorContainerRed
@@ -42,9 +44,13 @@ import cz.kt.onmath.ui.theme.HintContainerAmber
 
 sealed interface FeedbackState {
     data object None : FeedbackState
-    data class Correct(val message: String = "Správně!") : FeedbackState
-    data class Wrong(val message: String = "Zkus to znovu nebo použij nápovědu.") : FeedbackState
-    data class Hint(val message: String) : FeedbackState
+    data class Correct(
+        val message: UiText = UiText.Resource(R.string.feedback_correct),
+    ) : FeedbackState
+    data class Wrong(
+        val message: UiText = UiText.Resource(R.string.feedback_wrong_default),
+    ) : FeedbackState
+    data class Hint(val message: UiText) : FeedbackState
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +82,7 @@ fun PracticeTopBar(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Zpět",
+                        contentDescription = stringResource(R.string.back),
                     )
                 }
             },
@@ -96,9 +102,9 @@ fun FeedbackBanner(
     if (state is FeedbackState.None) return
 
     val (containerColor, contentColor, text) = when (state) {
-        is FeedbackState.Correct -> Triple(CorrectContainerGreen, CorrectGreen, state.message)
-        is FeedbackState.Wrong -> Triple(ErrorContainerRed, ErrorRed, state.message)
-        is FeedbackState.Hint -> Triple(HintContainerAmber, HintAmber, state.message)
+        is FeedbackState.Correct -> Triple(CorrectContainerGreen, CorrectGreen, state.message.asString())
+        is FeedbackState.Wrong -> Triple(ErrorContainerRed, ErrorRed, state.message.asString())
+        is FeedbackState.Hint -> Triple(HintContainerAmber, HintAmber, state.message.asString())
         FeedbackState.None -> return
     }
 
@@ -177,7 +183,7 @@ fun SessionSummaryView(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Lekce dokončena!",
+            text = stringResource(R.string.summary_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
         )
@@ -208,7 +214,7 @@ fun SessionSummaryView(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "správně na první pokus ($accuracy %)",
+                    text = stringResource(R.string.summary_first_try, accuracy),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                 )
@@ -223,7 +229,7 @@ fun SessionSummaryView(
                 .fillMaxWidth()
                 .height(52.dp),
         ) {
-            Text("Procvičit další sadu", fontSize = 16.sp)
+            Text(stringResource(R.string.summary_restart), fontSize = 16.sp)
         }
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedButton(
@@ -232,7 +238,7 @@ fun SessionSummaryView(
                 .fillMaxWidth()
                 .height(52.dp),
         ) {
-            Text("Zpět na výběr oblasti", fontSize = 16.sp)
+            Text(stringResource(R.string.summary_back_home), fontSize = 16.sp)
         }
     }
 }

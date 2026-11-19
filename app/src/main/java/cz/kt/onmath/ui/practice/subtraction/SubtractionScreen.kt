@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import cz.kt.onmath.R
 import cz.kt.onmath.domain.model.SubtractionMethod
 import cz.kt.onmath.domain.subtraction.SubtractionColumn
 import cz.kt.onmath.domain.subtraction.SubtractionProblem
@@ -67,7 +69,7 @@ fun SubtractionScreen(
         topBar = {
             if (!state.isFinished) {
                 PracticeTopBar(
-                    title = "Odčítání pod sebou",
+                    title = stringResource(R.string.topic_subtraction),
                     currentIndex = state.currentIndex,
                     totalCount = state.totalCount,
                     onBackClick = onBackClick,
@@ -77,7 +79,7 @@ fun SubtractionScreen(
     ) { padding ->
         if (state.isFinished) {
             SessionSummaryView(
-                topicTitle = "Odčítání pod sebou",
+                topicTitle = stringResource(R.string.topic_subtraction),
                 correctFirstTry = state.correctFirstTry,
                 totalProblems = state.totalCount,
                 onRestart = viewModel::startNewSession,
@@ -121,9 +123,9 @@ fun SubtractionScreen(
 
                 Text(
                     text = if (state.method == SubtractionMethod.BORROW_TOP) {
-                        "Tip: Ťukni na horní cifru nebo nad ni pro označení půjčení"
+                        stringResource(R.string.sub_tip_borrow_top)
                     } else {
-                        "Tip: Ťukni na dolní cifru pro označení přenesené jedničky"
+                        stringResource(R.string.sub_tip_carry_bottom)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -135,7 +137,7 @@ fun SubtractionScreen(
                     Button(
                         onClick = viewModel::onNextProblem,
                     ) {
-                        Text("Další příklad")
+                        Text(stringResource(R.string.action_next_problem))
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = null,
@@ -151,7 +153,7 @@ fun SubtractionScreen(
                             contentDescription = null,
                             modifier = Modifier.padding(end = 6.dp),
                         )
-                        Text("Nápověda k řádu")
+                        Text(stringResource(R.string.action_hint_column))
                     }
                 }
 

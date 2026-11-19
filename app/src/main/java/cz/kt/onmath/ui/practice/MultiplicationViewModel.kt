@@ -2,13 +2,16 @@ package cz.kt.onmath.ui.practice
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cz.kt.onmath.R
 import cz.kt.onmath.data.local.PracticeRepository
 import cz.kt.onmath.data.settings.SettingsRepository
 import cz.kt.onmath.domain.model.MathTopic
 import cz.kt.onmath.domain.multiplication.MultiplicationConfig
 import cz.kt.onmath.domain.multiplication.MultiplicationGenerator
+import cz.kt.onmath.domain.multiplication.MultiplicationOperation
 import cz.kt.onmath.domain.multiplication.MultiplicationProblem
 import cz.kt.onmath.ui.components.FeedbackState
+import cz.kt.onmath.ui.components.UiText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +29,9 @@ class MultiplicationViewModel(
     private var problems: List<MultiplicationProblem> = emptyList()
     private var hadMistakeOnCurrent = false
 
-    private val _uiState = MutableStateFlow(StandardPracticeUiState(title = "Násobilka"))
+    private val _uiState = MutableStateFlow(
+        StandardPracticeUiState(title = UiText.Resource(R.string.topic_multiplication)),
+    )
     val uiState: StateFlow<StandardPracticeUiState> = _uiState.asStateFlow()
 
     init {
@@ -43,7 +48,7 @@ class MultiplicationViewModel(
             problems = generator.generateSet(config, count = 10)
             hadMistakeOnCurrent = false
             _uiState.value = StandardPracticeUiState(
-                title = "Násobilka",
+                title = UiText.Resource(R.string.topic_multiplication),
                 problemDisplay = problems.first().displayText,
                 totalCount = problems.size,
             )
@@ -73,7 +78,13 @@ class MultiplicationViewModel(
 
     fun onHint() {
         val current = problems.getOrNull(_uiState.value.currentIndex) ?: return
-        _uiState.update { it.copy(feedback = FeedbackState.Hint(current.hintText)) }
+        val hint = when (current.operation) {
+            MultiplicationOperation.MULTIPLY ->
+                UiText.Resource(R.string.mult_hint_multiply, current.left, current.right)
+            MultiplicationOperation.DIVIDE ->
+                UiText.Resource(R.string.mult_hint_divide, current.right, current.left)
+        }
+        _uiState.update { it.copy(feedback = FeedbackState.Hint(hint)) }
     }
 
     fun onSubmit() {
@@ -111,7 +122,7 @@ class MultiplicationViewModel(
             _uiState.update {
                 it.copy(
                     inputText = "",
-                    feedback = FeedbackState.Wrong("To není ono, zkus to znovu."),
+                    feedback = FeedbackState.Wrong(UiText.Resource(R.string.mult_wrong)),
                 )
             }
         }

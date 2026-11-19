@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import cz.kt.onmath.data.local.PracticeRepository
 import cz.kt.onmath.data.settings.AppSettings
 import cz.kt.onmath.data.settings.SettingsRepository
+import cz.kt.onmath.domain.model.AppLanguage
 import cz.kt.onmath.domain.model.SubtractionMethod
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +22,12 @@ class SettingsViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = AppSettings(),
     )
+
+    fun setLanguage(language: AppLanguage) {
+        viewModelScope.launch {
+            settingsRepository.updateLanguage(language)
+        }
+    }
 
     fun setSubtractionMethod(method: SubtractionMethod) {
         viewModelScope.launch {

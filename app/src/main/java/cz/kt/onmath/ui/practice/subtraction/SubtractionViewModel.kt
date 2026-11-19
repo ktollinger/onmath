@@ -2,6 +2,7 @@ package cz.kt.onmath.ui.practice.subtraction
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cz.kt.onmath.R
 import cz.kt.onmath.data.local.PracticeRepository
 import cz.kt.onmath.data.settings.SettingsRepository
 import cz.kt.onmath.domain.model.MathTopic
@@ -10,6 +11,7 @@ import cz.kt.onmath.domain.subtraction.SubtractionConfig
 import cz.kt.onmath.domain.subtraction.SubtractionGenerator
 import cz.kt.onmath.domain.subtraction.SubtractionProblem
 import cz.kt.onmath.ui.components.FeedbackState
+import cz.kt.onmath.ui.components.UiText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -127,7 +129,58 @@ class SubtractionViewModel(
     fun onHint() {
         val state = _uiState.value
         val problem = state.problem ?: return
-        val hint = problem.hintForColumn(state.activePlaceIndex, state.method)
+        val col = problem.columnsRightToLeft.getOrNull(state.activePlaceIndex) ?: return
+        val placeLabel: UiText = when (col.placeIndex) {
+            0 -> UiText.Resource(R.string.place_ones)
+            1 -> UiText.Resource(R.string.place_tens)
+            2 -> UiText.Resource(R.string.place_hundreds)
+            3 -> UiText.Resource(R.string.place_thousands)
+            4 -> UiText.Resource(R.string.place_ten_thousands)
+            5 -> UiText.Resource(R.string.place_hundred_thousands)
+            else -> UiText.Resource(R.string.place_other, col.placeIndex + 1)
+        }
+        val hint = when (state.method) {
+            SubtractionMethod.BORROW_TOP -> {
+                val topAfterLend = col.effectiveUpperAfterLend
+                if (col.requiresBorrowFromNext) {
+                    UiText.Resource(
+                        R.string.sub_hint_borrow_top_with_borrow,
+                        placeLabel,
+                        topAfterLend + 10,
+                        col.subtrahendDigit,
+                        col.expectedResultDigit,
+                    )
+                } else {
+                    UiText.Resource(
+                        R.string.sub_hint_borrow_top_plain,
+                        placeLabel,
+                        topAfterLend,
+                        col.subtrahendDigit,
+                        col.expectedResultDigit,
+                    )
+                }
+            }
+            SubtractionMethod.CARRY_BOTTOM -> {
+                val bottomWithCarry = col.effectiveLowerWithCarry
+                if (col.requiresBorrowFromNext) {
+                    UiText.Resource(
+                        R.string.sub_hint_carry_bottom_with_carry,
+                        placeLabel,
+                        col.minuendDigit + 10,
+                        bottomWithCarry,
+                        col.expectedResultDigit,
+                    )
+                } else {
+                    UiText.Resource(
+                        R.string.sub_hint_carry_bottom_plain,
+                        placeLabel,
+                        col.minuendDigit,
+                        bottomWithCarry,
+                        col.expectedResultDigit,
+                    )
+                }
+            }
+        }
         _uiState.update { it.copy(feedback = FeedbackState.Hint(hint)) }
     }
 
@@ -153,7 +206,7 @@ class SubtractionViewModel(
                 it.copy(
                     correctFirstTry = newCorrectFirstTry,
                     wrongPlaces = emptySet(),
-                    feedback = FeedbackState.Correct("Správně! Prohlédni si výsledek a pokračuj."),
+                    feedback = FeedbackState.Correct(UiText.Resource(R.string.feedback_correct_inspect)),
                     isSolved = true,
                 )
             }
@@ -179,7 +232,7 @@ class SubtractionViewModel(
                 it.copy(
                     wrongPlaces = wrong,
                     activePlaceIndex = wrong.minOrNull() ?: 0,
-                    feedback = FeedbackState.Wrong("Zkontroluj zvýrazněné sloupce."),
+                    feedback = FeedbackState.Wrong(UiText.Resource(R.string.sub_wrong_columns)),
                 )
             }
         }

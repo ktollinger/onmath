@@ -1,3 +1,96 @@
 <resources>
     <string name="app_name">OnMath</string>
+    <string name="settings_title">Settings</string>
+    <string name="back">Back</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">Choose what to practice</string>
+    <string name="topic_multiplication">Multiplication</string>
+    <string name="topic_expressions">Expressions &amp; Parentheses</string>
+    <string name="topic_subtraction">Column Subtraction</string>
+    <string name="home_tables_all">Tables 1–10</string>
+    <string name="home_tables_selected">Tables: %1$s</string>
+    <string name="home_with_division">" + division"</string>
+    <string name="home_expr_with_parens">Order of operations with parentheses</string>
+    <string name="home_expr_without_parens">Order of operations without parentheses</string>
+    <string name="home_method_borrow_top">Montessori (borrow from top)</string>
+    <string name="home_method_carry_bottom">School (carry to bottom)</string>
+    <string name="home_subtraction_subtitle">%1$d–%2$d digits • %3$s</string>
+    <string name="home_topic_stats">Sessions: %1$d • Accuracy: %2$d%%</string>
+    <string name="home_recent_mistakes">Recent mistakes to review</string>
+    <string name="home_correct_answer">correct %1$d</string>
+
+    <!-- Settings -->
+    <string name="settings_language_section">Language</string>
+    <string name="settings_language_system">Automatic</string>
+    <string name="settings_language_czech">Čeština</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_subtraction_section">Column Subtraction</string>
+    <string name="settings_subtraction_method">Borrow / carry notation</string>
+    <string name="settings_method_borrow_top_title">Montessori / Anglo-Saxon method</string>
+    <string name="settings_method_borrow_top_subtitle">Borrow from a higher place (cross out and decrement top digit)</string>
+    <string name="settings_method_carry_bottom_title">Traditional Czech school method</string>
+    <string name="settings_method_carry_bottom_subtitle">Add 10 on top and carry 1 to the bottom subtrahend</string>
+    <string name="settings_digit_count">Number of digits: %1$d to %2$d</string>
+    <string name="settings_min_digits">Minimum digits</string>
+    <string name="settings_max_digits">Maximum digits</string>
+    <string name="settings_multiplication_section">Multiplication</string>
+    <string name="settings_selected_tables">Selected tables</string>
+    <string name="settings_select_all">Select all</string>
+    <string name="settings_include_division">Include division within tables</string>
+    <string name="settings_expressions_section">Expressions &amp; Order of Operations</string>
+    <string name="settings_use_parentheses">Use parentheses</string>
+    <string name="settings_large_intermediate">Higher difficulty (multiply &gt; 10, e.g. 18 × 3)</string>
+    <string name="settings_history_section">History</string>
+    <string name="settings_clear_history">Clear history and statistics</string>
+
+    <!-- Shared Practice -->
+    <string name="feedback_correct">Correct!</string>
+    <string name="feedback_correct_inspect">Correct! Review the result and continue.</string>
+    <string name="feedback_wrong_default">Try again or use a hint.</string>
+    <string name="action_hint">Hint</string>
+    <string name="action_hint_column">Place hint</string>
+    <string name="action_next_problem">Next problem</string>
+    <string name="action_undo_step">Undo step</string>
+    <string name="keypad_backspace">Delete</string>
+    <string name="keypad_submit">Confirm</string>
+    <string name="keypad_check">Check</string>
+    <string name="summary_title">Lesson complete!</string>
+    <string name="summary_first_try">correct on first try (%1$d%%)</string>
+    <string name="summary_restart">Practice another set</string>
+    <string name="summary_back_home">Back to topic selection</string>
+
+    <!-- Multiplication -->
+    <string name="mult_wrong">Not quite, try again.</string>
+    <string name="mult_hint_multiply">%1$d × %2$d means adding %2$d together %1$d times.</string>
+    <string name="mult_hint_divide">How many times does %1$d fit into %2$d? (%1$d × ? = %2$d)</string>
+
+    <!-- Expressions -->
+    <string name="expr_tip_tap_operator">Tap an operator to jot down an intermediate result</string>
+    <string name="expr_label_intermediate">Intermediate: %1$s</string>
+    <string name="expr_label_final">Final answer</string>
+    <string name="expr_back_to_final">Back to final answer</string>
+    <string name="expr_wrong_order">Check the order of operations and try again.</string>
+    <string name="expr_wrong_intermediate">Intermediate result for %1$s does not match, try again.</string>
+    <string name="expr_need_inner_first">Solve the sub-expression in parentheses or ×/÷ first.</string>
+    <string name="expr_hint_solve">Calculate the result.</string>
+    <string name="expr_hint_parens">Solve parentheses first: %1$s</string>
+    <string name="expr_hint_precedence">Multiplication and division come first: %1$s</string>
+    <string name="expr_hint_left_to_right">Go from left to right: %1$s</string>
+
+    <!-- Subtraction -->
+    <string name="sub_tip_borrow_top">Tip: Tap a top digit or above it to mark a borrow</string>
+    <string name="sub_tip_carry_bottom">Tip: Tap a bottom digit to mark a carried 1</string>
+    <string name="sub_wrong_columns">Check the highlighted columns.</string>
+    <string name="sub_hint_borrow_top_with_borrow">%1$s: Borrow 1 from the next place → %2$d − %3$d = %4$d.</string>
+    <string name="sub_hint_borrow_top_plain">%1$s: %2$d − %3$d = %4$d.</string>
+    <string name="sub_hint_carry_bottom_with_carry">%1$s: Add 10 → %2$d − %3$d = %4$d (and carry 1 to the next place).</string>
+    <string name="sub_hint_carry_bottom_plain">%1$s: %2$d − %3$d = %4$d.</string>
+    <string name="place_ones">Ones</string>
+    <string name="place_tens">Tens</string>
+    <string name="place_hundreds">Hundreds</string>
+    <string name="place_thousands">Thousands</string>
+    <string name="place_ten_thousands">Ten thousands</string>
+    <string name="place_hundred_thousands">Hundred thousands</string>
+    <string name="place_other">Place %1$d</string>
 </resources>

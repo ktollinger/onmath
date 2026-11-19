@@ -2,20 +2,23 @@ package cz.kt.onmath.ui.practice
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cz.kt.onmath.R
 import cz.kt.onmath.data.local.PracticeRepository
 import cz.kt.onmath.data.settings.SettingsRepository
 import cz.kt.onmath.domain.expression.ExpressionDifficulty
 import cz.kt.onmath.domain.expression.ExpressionGenerator
 import cz.kt.onmath.domain.expression.ExpressionNode
 import cz.kt.onmath.domain.expression.ExpressionProblem
+import cz.kt.onmath.domain.expression.ExpressionStepHint
 import cz.kt.onmath.domain.expression.ExpressionToken
 import cz.kt.onmath.domain.expression.findBinaryNode
-import cz.kt.onmath.domain.expression.firstStepHint
+import cz.kt.onmath.domain.expression.firstStepHintInfo
 import cz.kt.onmath.domain.expression.reduceWith
 import cz.kt.onmath.domain.expression.removeIntermediateAndAncestors
 import cz.kt.onmath.domain.expression.tokenize
 import cz.kt.onmath.domain.model.MathTopic
 import cz.kt.onmath.ui.components.FeedbackState
+import cz.kt.onmath.ui.components.UiText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ExpressionsUiState(
-    val title: String = "Výrazy a závorky",
+    val title: UiText = UiText.Resource(R.string.topic_expressions),
     val root: ExpressionNode? = null,
     val originalExpression: String = "",
     val tokens: List<ExpressionToken> = emptyList(),
@@ -119,7 +122,7 @@ class ExpressionsViewModel(
                     selectedSubExpression = "",
                     intermediateInputText = "",
                     tokens = refreshedTokens,
-                    feedback = FeedbackState.Hint("Nejdřív spočítej podvýraz v závorce nebo násobení/dělení."),
+                    feedback = FeedbackState.Hint(UiText.Resource(R.string.expr_need_inner_first)),
                 )
             }
             return
@@ -170,7 +173,9 @@ class ExpressionsViewModel(
             _uiState.update {
                 it.copy(
                     intermediateInputText = "",
-                    feedback = FeedbackState.Wrong("Mezivýsledek pro ${state.selectedSubExpression} nesedí, zkus to znovu."),
+                    feedback = FeedbackState.Wrong(
+                        UiText.Resource(R.string.expr_wrong_intermediate, state.selectedSubExpression),
+                    ),
                 )
             }
             return null
@@ -293,8 +298,13 @@ class ExpressionsViewModel(
     fun onHint() {
         val state = _uiState.value
         val current = problems.getOrNull(state.currentIndex) ?: return
-        val hint = current.root.reduceWith(state.intermediates).firstStepHint()
-        _uiState.update { it.copy(feedback = FeedbackState.Hint(hint)) }
+        val hintText = when (val hint = current.root.reduceWith(state.intermediates).firstStepHintInfo()) {
+            ExpressionStepHint.SolveDefault -> UiText.Resource(R.string.expr_hint_solve)
+            is ExpressionStepHint.Parentheses -> UiText.Resource(R.string.expr_hint_parens, hint.equation)
+            is ExpressionStepHint.Precedence -> UiText.Resource(R.string.expr_hint_precedence, hint.equation)
+            is ExpressionStepHint.LeftToRight -> UiText.Resource(R.string.expr_hint_left_to_right, hint.equation)
+        }
+        _uiState.update { it.copy(feedback = FeedbackState.Hint(hintText)) }
     }
 
     fun onSubmit() {
@@ -314,7 +324,7 @@ class ExpressionsViewModel(
             _uiState.update {
                 it.copy(
                     correctFirstTry = newCorrectFirstTry,
-                    feedback = FeedbackState.Correct("Správně! Prohlédni si výsledek a pokračuj."),
+                    feedback = FeedbackState.Correct(UiText.Resource(R.string.feedback_correct_inspect)),
                     isSolved = true,
                 )
             }
@@ -334,7 +344,7 @@ class ExpressionsViewModel(
             _uiState.update {
                 it.copy(
                     inputText = "",
-                    feedback = FeedbackState.Wrong("Zkus zkontrolovat pořadí operací."),
+                    feedback = FeedbackState.Wrong(UiText.Resource(R.string.expr_wrong_order)),
                 )
             }
         }
@@ -369,7 +379,9 @@ class ExpressionsViewModel(
             _uiState.update {
                 it.copy(
                     intermediateInputText = "",
-                    feedback = FeedbackState.Wrong("Mezivýsledek pro ${state.selectedSubExpression} nesedí, zkus to znovu."),
+                    feedback = FeedbackState.Wrong(
+                        UiText.Resource(R.string.expr_wrong_intermediate, state.selectedSubExpression),
+                    ),
                 )
             }
         }

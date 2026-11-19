@@ -1,0 +1,96 @@
+<resources>
+    <string name="app_name">OnMath</string>
+    <string name="settings_title">Nastavení</string>
+    <string name="back">Zpět</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">Vyber si, co chceš procvičovat</string>
+    <string name="topic_multiplication">Násobilka</string>
+    <string name="topic_expressions">Výrazy a závorky</string>
+    <string name="topic_subtraction">Odčítání pod sebou</string>
+    <string name="home_tables_all">Řady 1–10</string>
+    <string name="home_tables_selected">Řady: %1$s</string>
+    <string name="home_with_division">" + dělení"</string>
+    <string name="home_expr_with_parens">Priorita operací se závorkami</string>
+    <string name="home_expr_without_parens">Priorita operací bez závorek</string>
+    <string name="home_method_borrow_top">Montessori (půjčení nahoře)</string>
+    <string name="home_method_carry_bottom">Školní (jednička dolů)</string>
+    <string name="home_subtraction_subtitle">%1$d–%2$d cifer • %3$s</string>
+    <string name="home_topic_stats">Lekcí: %1$d • Úspěšnost: %2$d %%</string>
+    <string name="home_recent_mistakes">Poslední chybičky k připomenutí</string>
+    <string name="home_correct_answer">správně %1$d</string>
+
+    <!-- Settings -->
+    <string name="settings_language_section">Jazyk</string>
+    <string name="settings_language_system">Automaticky</string>
+    <string name="settings_language_czech">Čeština</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_subtraction_section">Odčítání pod sebou</string>
+    <string name="settings_subtraction_method">Způsob značení přenosů</string>
+    <string name="settings_method_borrow_top_title">Montessori / anglosaský způsob</string>
+    <string name="settings_method_borrow_top_subtitle">Půjčení z vyššího řádu (škrtání a snížení horní cifry)</string>
+    <string name="settings_method_carry_bottom_title">Český školní způsob</string>
+    <string name="settings_method_carry_bottom_subtitle">Přičtení 10 nahoře a přenesení jedničky dolů k menšiteli</string>
+    <string name="settings_digit_count">Počet cifer: %1$d až %2$d</string>
+    <string name="settings_min_digits">Minimum cifer</string>
+    <string name="settings_max_digits">Maximum cifer</string>
+    <string name="settings_multiplication_section">Násobilka</string>
+    <string name="settings_selected_tables">Vybrané řady</string>
+    <string name="settings_select_all">Vybrat vše</string>
+    <string name="settings_include_division">Zahrnout dělení v rámci násobilky</string>
+    <string name="settings_expressions_section">Výrazy a priority operací</string>
+    <string name="settings_use_parentheses">Používat závorky</string>
+    <string name="settings_large_intermediate">Vyšší obtížnost (násobení nad 10, např. 18 × 3)</string>
+    <string name="settings_history_section">Historie</string>
+    <string name="settings_clear_history">Vymazat historii a statistiky</string>
+
+    <!-- Shared Practice -->
+    <string name="feedback_correct">Správně!</string>
+    <string name="feedback_correct_inspect">Správně! Prohlédni si výsledek a pokračuj.</string>
+    <string name="feedback_wrong_default">Zkus to znovu nebo použij nápovědu.</string>
+    <string name="action_hint">Nápověda</string>
+    <string name="action_hint_column">Nápověda k řádu</string>
+    <string name="action_next_problem">Další příklad</string>
+    <string name="action_undo_step">Zpět krok</string>
+    <string name="keypad_backspace">Smazat</string>
+    <string name="keypad_submit">Potvrdit</string>
+    <string name="keypad_check">Zkontrolovat</string>
+    <string name="summary_title">Lekce dokončena!</string>
+    <string name="summary_first_try">správně na první pokus (%1$d %%)</string>
+    <string name="summary_restart">Procvičit další sadu</string>
+    <string name="summary_back_home">Zpět na výběr oblasti</string>
+
+    <!-- Multiplication -->
+    <string name="mult_wrong">To není ono, zkus to znovu.</string>
+    <string name="mult_hint_multiply">%1$d × %2$d znamená %1$dkrát sečíst číslo %2$d.</string>
+    <string name="mult_hint_divide">Kolikrát se vejde %1$d do %2$d? (%1$d × ? = %2$d)</string>
+
+    <!-- Expressions -->
+    <string name="expr_tip_tap_operator">Klepni na znaménko pro zápis mezivýsledku</string>
+    <string name="expr_label_intermediate">Mezivýsledek: %1$s</string>
+    <string name="expr_label_final">Celkový výsledek</string>
+    <string name="expr_back_to_final">Zpět k celkovému výsledku</string>
+    <string name="expr_wrong_order">Zkus zkontrolovat pořadí operací.</string>
+    <string name="expr_wrong_intermediate">Mezivýsledek pro %1$s nesedí, zkus to znovu.</string>
+    <string name="expr_need_inner_first">Nejdřív spočítej podvýraz v závorce nebo násobení/dělení.</string>
+    <string name="expr_hint_solve">Spočítej výsledek.</string>
+    <string name="expr_hint_parens">Nejdřív spočítej závorku: %1$s</string>
+    <string name="expr_hint_precedence">Násobení a dělení mají přednost: %1$s</string>
+    <string name="expr_hint_left_to_right">Postupuj zleva doprava: %1$s</string>
+
+    <!-- Subtraction -->
+    <string name="sub_tip_borrow_top">Tip: Ťukni na horní cifru nebo nad ni pro označení půjčení</string>
+    <string name="sub_tip_carry_bottom">Tip: Ťukni na dolní cifru pro označení přenesené jedničky</string>
+    <string name="sub_wrong_columns">Zkontroluj zvýrazněné sloupce.</string>
+    <string name="sub_hint_borrow_top_with_borrow">%1$s: Půjč si 1 z vyššího řádu → %2$d − %3$d = %4$d.</string>
+    <string name="sub_hint_borrow_top_plain">%1$s: %2$d − %3$d = %4$d.</string>
+    <string name="sub_hint_carry_bottom_with_carry">%1$s: Přičti 10 → %2$d − %3$d = %4$d (a 1 jde dolů do dalšího řádu).</string>
+    <string name="sub_hint_carry_bottom_plain">%1$s: %2$d − %3$d = %4$d.</string>
+    <string name="place_ones">Jednotky</string>
+    <string name="place_tens">Desítky</string>
+    <string name="place_hundreds">Stovky</string>
+    <string name="place_thousands">Tisíce</string>
+    <string name="place_ten_thousands">Desetitisíce</string>
+    <string name="place_hundred_thousands">Statisíce</string>
+    <string name="place_other">Řád %1$d</string>
+</resources>

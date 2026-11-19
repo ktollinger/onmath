@@ -33,10 +33,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import cz.kt.onmath.R
 import cz.kt.onmath.data.local.TopicStats
 import cz.kt.onmath.domain.model.MathTopic
 import cz.kt.onmath.domain.model.SubtractionMethod
@@ -62,7 +64,7 @@ fun HomeScreen(
                     IconButton(onClick = onOpenSettings) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Nastavení",
+                            contentDescription = stringResource(R.string.settings_title),
                         )
                     }
                 },
@@ -78,19 +80,19 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                text = "Vyber si, co chceš procvičovat",
+                text = stringResource(R.string.home_subtitle),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             val tablesDesc = if (settings.multiplicationTables.size == 10) {
-                "Řady 1–10"
+                stringResource(R.string.home_tables_all)
             } else {
-                "Řady: ${settings.multiplicationTables.sorted().joinToString(", ")}"
-            } + if (settings.multiplicationIncludeDivision) " + dělení" else ""
+                stringResource(R.string.home_tables_selected, settings.multiplicationTables.sorted().joinToString(", "))
+            } + if (settings.multiplicationIncludeDivision) stringResource(R.string.home_with_division) else ""
 
             TopicCard(
-                title = "Násobilka",
+                title = stringResource(R.string.topic_multiplication),
                 subtitle = tablesDesc,
                 icon = Icons.Default.Close,
                 stats = state.statsByTopic[MathTopic.MULTIPLICATION],
@@ -98,11 +100,11 @@ fun HomeScreen(
             )
 
             TopicCard(
-                title = "Výrazy a závorky",
+                title = stringResource(R.string.topic_expressions),
                 subtitle = if (settings.expressionWithParentheses) {
-                    "Priorita operací se závorkami"
+                    stringResource(R.string.home_expr_with_parens)
                 } else {
-                    "Priorita operací bez závorek"
+                    stringResource(R.string.home_expr_without_parens)
                 },
                 icon = Icons.Default.Functions,
                 stats = state.statsByTopic[MathTopic.EXPRESSIONS],
@@ -110,12 +112,17 @@ fun HomeScreen(
             )
 
             val methodLabel = when (settings.subtractionMethod) {
-                SubtractionMethod.BORROW_TOP -> "Montessori (půjčení nahoře)"
-                SubtractionMethod.CARRY_BOTTOM -> "Školní (jednička dolů)"
+                SubtractionMethod.BORROW_TOP -> stringResource(R.string.home_method_borrow_top)
+                SubtractionMethod.CARRY_BOTTOM -> stringResource(R.string.home_method_carry_bottom)
             }
             TopicCard(
-                title = "Odčítání pod sebou",
-                subtitle = "${settings.subtractionMinDigits}–${settings.subtractionMaxDigits} cifer • $methodLabel",
+                title = stringResource(R.string.topic_subtraction),
+                subtitle = stringResource(
+                    R.string.home_subtraction_subtitle,
+                    settings.subtractionMinDigits,
+                    settings.subtractionMaxDigits,
+                    methodLabel,
+                ),
                 icon = Icons.Default.Calculate,
                 stats = state.statsByTopic[MathTopic.SUBTRACTION],
                 onClick = { onOpenTopic(MathTopic.SUBTRACTION) },
@@ -124,7 +131,7 @@ fun HomeScreen(
             if (state.recentMistakes.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Poslední chybičky k připomenutí",
+                    text = stringResource(R.string.home_recent_mistakes),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -146,7 +153,7 @@ fun HomeScreen(
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
                                 Text(
-                                    text = "správně ${mistake.expectedAnswer}",
+                                    text = stringResource(R.string.home_correct_answer, mistake.expectedAnswer),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.primary,
@@ -211,7 +218,7 @@ private fun TopicCard(
                 if (stats != null && stats.sessionCount > 0) {
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Lekcí: ${stats.sessionCount} • Úspěšnost: ${stats.accuracyPercent} %",
+                        text = stringResource(R.string.home_topic_stats, stats.sessionCount, stats.accuracyPercent),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                     )

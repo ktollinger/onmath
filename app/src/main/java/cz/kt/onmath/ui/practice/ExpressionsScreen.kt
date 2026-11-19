@@ -35,10 +35,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cz.kt.onmath.R
 import cz.kt.onmath.domain.expression.BinaryNode
 import cz.kt.onmath.domain.expression.BinaryOperator
 import cz.kt.onmath.domain.expression.ExpressionNode
@@ -47,6 +49,7 @@ import cz.kt.onmath.ui.components.FeedbackBanner
 import cz.kt.onmath.ui.components.MathKeypad
 import cz.kt.onmath.ui.components.PracticeTopBar
 import cz.kt.onmath.ui.components.SessionSummaryView
+import cz.kt.onmath.ui.components.asString
 
 @Composable
 fun ExpressionsScreen(
@@ -65,12 +68,14 @@ fun ExpressionsScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val resolvedTitle = state.title.asString()
+
     Scaffold(
         modifier = modifier,
         topBar = {
             if (!state.isFinished) {
                 PracticeTopBar(
-                    title = state.title,
+                    title = resolvedTitle,
                     currentIndex = state.currentIndex,
                     totalCount = state.totalCount,
                     onBackClick = onBackClick,
@@ -80,7 +85,7 @@ fun ExpressionsScreen(
     ) { padding ->
         if (state.isFinished) {
             SessionSummaryView(
-                topicTitle = state.title,
+                topicTitle = resolvedTitle,
                 correctFirstTry = state.correctFirstTry,
                 totalProblems = state.totalCount,
                 onRestart = onRestart,
@@ -112,7 +117,7 @@ fun ExpressionsScreen(
                 ) {
                     if (state.intermediates.isEmpty() && !state.isEditingIntermediate && !state.isSolved) {
                         Text(
-                            text = "Klepni na znaménko pro zápis mezivýsledku",
+                            text = stringResource(R.string.expr_tip_tap_operator),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
@@ -178,9 +183,9 @@ fun ExpressionsScreen(
                 ) {
                     Text(
                         text = if (state.isEditingIntermediate) {
-                            "Mezivýsledek: ${state.selectedSubExpression}"
+                            stringResource(R.string.expr_label_intermediate, state.selectedSubExpression)
                         } else {
-                            "Celkový výsledek"
+                            stringResource(R.string.expr_label_final)
                         },
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
@@ -243,7 +248,7 @@ fun ExpressionsScreen(
                                 contentDescription = null,
                                 modifier = Modifier.padding(end = 4.dp),
                             )
-                            Text("Zpět k celkovému výsledku")
+                            Text(stringResource(R.string.expr_back_to_final))
                         }
                     }
                 }
@@ -257,7 +262,7 @@ fun ExpressionsScreen(
                 ) {
                     if (state.isSolved) {
                         Button(onClick = onNextProblem) {
-                            Text("Další příklad")
+                            Text(stringResource(R.string.action_next_problem))
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                 contentDescription = null,
@@ -271,7 +276,7 @@ fun ExpressionsScreen(
                                 contentDescription = null,
                                 modifier = Modifier.padding(end = 6.dp),
                             )
-                            Text("Nápověda")
+                            Text(stringResource(R.string.action_hint))
                         }
 
                         if (state.canUndoIntermediate) {
@@ -281,7 +286,7 @@ fun ExpressionsScreen(
                                     contentDescription = null,
                                     modifier = Modifier.padding(end = 6.dp),
                                 )
-                                Text("Zpět krok")
+                                Text(stringResource(R.string.action_undo_step))
                             }
                         }
                     }

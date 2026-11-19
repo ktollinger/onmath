@@ -18,9 +18,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cz.kt.onmath.R
 import cz.kt.onmath.ui.theme.CorrectGreen
 
 /**
@@ -73,7 +75,7 @@ fun MathKeypad(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Backspace,
-                    contentDescription = "Smazat",
+                    contentDescription = stringResource(R.string.keypad_backspace),
                 )
             }
 
@@ -96,7 +98,7 @@ fun MathKeypad(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Potvrdit",
+                        contentDescription = stringResource(R.string.keypad_submit),
                     )
                 }
             } else {
@@ -112,7 +114,7 @@ fun MathKeypad(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Zkontrolovat",
+                        contentDescription = stringResource(R.string.keypad_check),
                     )
                 }
             }
