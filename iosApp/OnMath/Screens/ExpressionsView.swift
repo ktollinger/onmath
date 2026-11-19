@@ -100,33 +100,26 @@ struct ExpressionsView: View {
                         .foregroundColor(selectedNodeId != nil ? AppThemeColors.primaryBlue : .secondary)
                         .frame(height: 22)
 
-                        // Input box
-                        Button {
-                            if selectedNodeId != nil && !isSolved {
-                                onFocusFinalAnswer()
-                            }
-                        } label: {
-                            Text(activeInputText.isEmpty ? "?" : activeInputText)
-                                .font(.system(size: 30, weight: .bold))
-                                .foregroundColor(activeInputText.isEmpty ? Color.gray.opacity(0.4) : .primary)
-                                .frame(maxWidth: 220)
-                                .frame(height: compactMode ? 52 : 60)
-                                .background(
-                                    selectedNodeId != nil
-                                        ? AppThemeColors.hintAmber.opacity(0.18)
-                                        : AppThemeColors.surfaceLight
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .stroke(
-                                            selectedNodeId != nil ? AppThemeColors.hintAmber : AppThemeColors.primaryBlue,
-                                            lineWidth: 2
-                                        )
-                                )
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.top, 4)
+                        // Input box (displays active input; tapping it does not cancel intermediate mode)
+                        Text(activeInputText.isEmpty ? "?" : activeInputText)
+                            .font(.system(size: 30, weight: .bold))
+                            .foregroundColor(activeInputText.isEmpty ? Color.gray.opacity(0.4) : .primary)
+                            .frame(maxWidth: 220)
+                            .frame(height: compactMode ? 52 : 60)
+                            .background(
+                                selectedNodeId != nil
+                                    ? AppThemeColors.hintAmber.opacity(0.18)
+                                    : AppThemeColors.surfaceLight
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .stroke(
+                                        selectedNodeId != nil ? AppThemeColors.hintAmber : AppThemeColors.primaryBlue,
+                                        lineWidth: 2
+                                    )
+                            )
+                            .padding(.top, 4)
 
                         // Cancel intermediate slot (fixed height)
                         Group {

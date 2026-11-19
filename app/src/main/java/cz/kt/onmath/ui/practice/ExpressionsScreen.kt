@@ -216,11 +216,7 @@ fun ExpressionsScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth(0.65f)
-                        .height(64.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable(enabled = state.isEditingIntermediate && !state.isSolved) {
-                            onFocusFinalAnswer()
-                        },
+                        .height(64.dp),
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         val display = state.activeInputText
