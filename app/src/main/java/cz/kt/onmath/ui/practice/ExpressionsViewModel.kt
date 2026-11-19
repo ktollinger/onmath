@@ -16,7 +16,6 @@ import cz.kt.onmath.domain.expression.removeIntermediateAndAncestors
 import cz.kt.onmath.domain.expression.tokenize
 import cz.kt.onmath.domain.model.MathTopic
 import cz.kt.onmath.ui.components.FeedbackState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,7 +38,7 @@ data class ExpressionsUiState(
     val totalCount: Int = 10,
     val correctFirstTry: Int = 0,
     val feedback: FeedbackState = FeedbackState.None,
-    val isAdvancing: Boolean = false,
+    val isSolved: Boolean = false,
     val isFinished: Boolean = false,
 ) {
     val isEditingIntermediate: Boolean
@@ -49,7 +48,7 @@ data class ExpressionsUiState(
         get() = if (isEditingIntermediate) intermediateInputText else inputText
 
     val canUndoIntermediate: Boolean
-        get() = intermediateOrder.isNotEmpty() && !isAdvancing
+        get() = intermediateOrder.isNotEmpty() && !isSolved
 }
 
 class ExpressionsViewModel(
@@ -94,7 +93,7 @@ class ExpressionsViewModel(
 
     fun onSelectOperator(nodeId: String) {
         val state = _uiState.value
-        if (state.isAdvancing || state.isFinished) return
+        if (state.isSolved || state.isFinished) return
         val current = problems.getOrNull(state.currentIndex) ?: return
 
         if (state.selectedNodeId == nodeId) {
@@ -141,7 +140,7 @@ class ExpressionsViewModel(
 
     fun onFocusFinalAnswer() {
         val state = _uiState.value
-        if (state.isAdvancing || state.isFinished || state.selectedNodeId == null) return
+        if (state.isSolved || state.isFinished || state.selectedNodeId == null) return
         val current = problems.getOrNull(state.currentIndex) ?: return
         val committed = tryAutoCommitPendingIntermediate(state, current) ?: return
         val (workingIntermediates, workingOrder) = committed
@@ -184,7 +183,7 @@ class ExpressionsViewModel(
 
     fun onSelectSubstituted(nodeId: String) {
         val state = _uiState.value
-        if (state.isAdvancing || state.isFinished) return
+        if (state.isSolved || state.isFinished) return
         val current = problems.getOrNull(state.currentIndex) ?: return
 
         val (updatedIntermediates, updatedOrder) = removeIntermediateAndAncestors(
@@ -213,7 +212,7 @@ class ExpressionsViewModel(
 
     fun onCancelIntermediate() {
         val state = _uiState.value
-        if (state.isAdvancing || state.isFinished || state.selectedNodeId == null) return
+        if (state.isSolved || state.isFinished || state.selectedNodeId == null) return
         val current = problems.getOrNull(state.currentIndex) ?: return
         _uiState.update {
             it.copy(
@@ -228,7 +227,7 @@ class ExpressionsViewModel(
 
     fun onUndoIntermediate() {
         val state = _uiState.value
-        if (state.isAdvancing || state.isFinished || state.intermediateOrder.isEmpty()) return
+        if (state.isSolved || state.isFinished || state.intermediateOrder.isEmpty()) return
         val current = problems.getOrNull(state.currentIndex) ?: return
         val lastNodeId = state.intermediateOrder.last()
         val (updatedIntermediates, updatedOrder) = removeIntermediateAndAncestors(
@@ -251,7 +250,7 @@ class ExpressionsViewModel(
 
     fun onDigit(digit: Int) {
         val state = _uiState.value
-        if (state.isAdvancing || state.isFinished) return
+        if (state.isSolved || state.isFinished) return
         _uiState.update { current ->
             if (current.isEditingIntermediate) {
                 if (current.intermediateInputText.length >= 4) current
@@ -275,7 +274,7 @@ class ExpressionsViewModel(
 
     fun onBackspace() {
         val state = _uiState.value
-        if (state.isAdvancing || state.isFinished) return
+        if (state.isSolved || state.isFinished) return
         _uiState.update { current ->
             if (current.isEditingIntermediate) {
                 current.copy(
@@ -300,7 +299,7 @@ class ExpressionsViewModel(
 
     fun onSubmit() {
         val state = _uiState.value
-        if (state.isAdvancing || state.isFinished) return
+        if (state.isSolved || state.isFinished) return
         val current = problems.getOrNull(state.currentIndex) ?: return
 
         val selectedId = state.selectedNodeId
@@ -315,13 +314,9 @@ class ExpressionsViewModel(
             _uiState.update {
                 it.copy(
                     correctFirstTry = newCorrectFirstTry,
-                    feedback = FeedbackState.Correct(),
-                    isAdvancing = true,
+                    feedback = FeedbackState.Correct("Správně! Prohlédni si výsledek a pokračuj."),
+                    isSolved = true,
                 )
-            }
-            viewModelScope.launch {
-                delay(650)
-                advanceToNext(newCorrectFirstTry)
             }
         } else {
             if (!hadMistakeOnCurrent) {
@@ -380,6 +375,14 @@ class ExpressionsViewModel(
         }
     }
 
+    fun onNextProblem() {
+        val state = _uiState.value
+        if (!state.isSolved || state.isFinished) return
+        viewModelScope.launch {
+            advanceToNext(state.correctFirstTry)
+        }
+    }
+
     private suspend fun advanceToNext(correctFirstTry: Int) {
         val nextIndex = _uiState.value.currentIndex + 1
         if (nextIndex >= problems.size) {
@@ -389,7 +392,7 @@ class ExpressionsViewModel(
                 correctFirstTry = correctFirstTry,
             )
             _uiState.update {
-                it.copy(isAdvancing = false, isFinished = true)
+                it.copy(isSolved = false, isFinished = true)
             }
         } else {
             hadMistakeOnCurrent = false
@@ -407,7 +410,7 @@ class ExpressionsViewModel(
                     intermediateInputText = "",
                     inputText = "",
                     feedback = FeedbackState.None,
-                    isAdvancing = false,
+                    isSolved = false,
                 )
             }
         }

@@ -19,9 +19,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -57,6 +59,7 @@ fun ExpressionsScreen(
     onDigit: (Int) -> Unit,
     onBackspace: () -> Unit,
     onSubmit: () -> Unit,
+    onNextProblem: () -> Unit,
     onHint: () -> Unit,
     onRestart: () -> Unit,
     onBackClick: () -> Unit,
@@ -99,26 +102,35 @@ fun ExpressionsScreen(
                     .fillMaxWidth()
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.Top,
             ) {
-                if (state.intermediates.isEmpty() && !state.isEditingIntermediate) {
-                    Text(
-                        text = "Klepni na znaménko pro zápis mezivýsledku",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(
+                    modifier = Modifier.height(20.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (state.intermediates.isEmpty() && !state.isEditingIntermediate && !state.isSolved) {
+                        Text(
+                            text = "Klepni na znaménko pro zápis mezivýsledku",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
 
+                Spacer(modifier = Modifier.height(8.dp))
+
                 val rootNode = state.root
-                if (rootNode != null) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        contentAlignment = Alignment.Center,
-                    ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(132.dp)
+                        .horizontalScroll(rememberScrollState()),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    if (rootNode != null) {
                         Row(
                             verticalAlignment = Alignment.Top,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -130,38 +142,57 @@ fun ExpressionsScreen(
                                 wrapWithParens = false,
                                 intermediates = state.intermediates,
                                 selectedNodeId = state.selectedNodeId,
-                                enabled = !state.isAdvancing,
+                                enabled = !state.isSolved,
                                 onSelectOperator = onSelectOperator,
                                 onSelectSubstituted = onSelectSubstituted,
                             )
 
                             Box(
-                                modifier = Modifier.height(42.dp),
+                                modifier = Modifier
+                                    .height(42.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable(enabled = state.isEditingIntermediate && !state.isSolved) {
+                                        onFocusFinalAnswer()
+                                    },
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
-                                    text = "= ?",
+                                    text = if (state.isSolved) "= ${state.inputText}" else "= ?",
                                     fontSize = 28.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(start = 2.dp),
+                                    color = if (state.isSolved) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                    modifier = Modifier.padding(horizontal = 4.dp),
                                 )
                             }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                if (state.isEditingIntermediate) {
+                Box(
+                    modifier = Modifier.height(24.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
                     Text(
-                        text = "Mezivýsledek: ${state.selectedSubExpression}",
+                        text = if (state.isEditingIntermediate) {
+                            "Mezivýsledek: ${state.selectedSubExpression}"
+                        } else {
+                            "Celkový výsledek"
+                        },
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = if (state.isEditingIntermediate) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
                 }
+
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Surface(
                     shape = RoundedCornerShape(16.dp),
@@ -182,7 +213,7 @@ fun ExpressionsScreen(
                         .fillMaxWidth(0.65f)
                         .height(64.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .clickable(enabled = state.isEditingIntermediate && !state.isAdvancing) {
+                        .clickable(enabled = state.isEditingIntermediate && !state.isSolved) {
                             onFocusFinalAnswer()
                         },
                 ) {
@@ -201,57 +232,78 @@ fun ExpressionsScreen(
                     }
                 }
 
-                if (state.isEditingIntermediate) {
-                    TextButton(onClick = onCancelIntermediate) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = null,
-                            modifier = Modifier.padding(end = 4.dp),
-                        )
-                        Text("Zpět k celkovému výsledku")
-                    }
-                } else {
-                    Spacer(modifier = Modifier.height(14.dp))
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                Box(
+                    modifier = Modifier.height(40.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    OutlinedButton(
-                        onClick = onHint,
-                        enabled = !state.isAdvancing,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Lightbulb,
-                            contentDescription = null,
-                            modifier = Modifier.padding(end = 6.dp),
-                        )
-                        Text("Nápověda")
-                    }
-
-                    if (state.canUndoIntermediate) {
-                        OutlinedButton(onClick = onUndoIntermediate) {
+                    if (state.isEditingIntermediate && !state.isSolved) {
+                        TextButton(onClick = onCancelIntermediate) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Undo,
+                                imageVector = Icons.Default.Close,
                                 contentDescription = null,
-                                modifier = Modifier.padding(end = 6.dp),
+                                modifier = Modifier.padding(end = 4.dp),
                             )
-                            Text("Zpět krok")
+                            Text("Zpět k celkovému výsledku")
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (state.isSolved) {
+                        Button(onClick = onNextProblem) {
+                            Text("Další příklad")
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                modifier = Modifier.padding(start = 6.dp),
+                            )
+                        }
+                    } else {
+                        OutlinedButton(onClick = onHint) {
+                            Icon(
+                                imageVector = Icons.Default.Lightbulb,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 6.dp),
+                            )
+                            Text("Nápověda")
+                        }
 
-                FeedbackBanner(state = state.feedback)
+                        if (state.canUndoIntermediate) {
+                            OutlinedButton(onClick = onUndoIntermediate) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Undo,
+                                    contentDescription = null,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                )
+                                Text("Zpět krok")
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(minHeight = 72.dp),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    FeedbackBanner(state = state.feedback)
+                }
             }
 
             MathKeypad(
                 onDigit = onDigit,
                 onBackspace = onBackspace,
                 onSubmit = onSubmit,
-                submitEnabled = state.activeInputText.isNotEmpty() && !state.isAdvancing,
+                submitEnabled = state.activeInputText.isNotEmpty() && !state.isSolved,
             )
         }
     }
