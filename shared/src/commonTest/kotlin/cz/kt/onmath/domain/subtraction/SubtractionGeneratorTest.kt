@@ -1,10 +1,10 @@
 package cz.kt.onmath.domain.subtraction
 
 import cz.kt.onmath.domain.model.SubtractionMethod
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.random.Random
 
 class SubtractionGeneratorTest {
@@ -55,7 +55,7 @@ class SubtractionGeneratorTest {
             assertTrue(problem.minuend > problem.subtrahend)
             assertEquals(problem.minuend - problem.subtrahend, problem.answer)
             assertTrue(problem.digitCount in 2..6)
-            assertTrue("Expected at least one borrow in ${problem.key}", problem.borrowCount >= 1)
+            assertTrue(problem.borrowCount >= 1, "Expected at least one borrow in ${problem.key}")
         }
     }
 

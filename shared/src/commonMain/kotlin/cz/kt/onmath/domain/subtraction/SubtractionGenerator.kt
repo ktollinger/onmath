@@ -94,6 +94,7 @@ data class SubtractionProblem(
 class SubtractionGenerator(
     private val random: Random = Random.Default,
 ) {
+    constructor() : this(Random.Default)
     fun generate(config: SubtractionConfig = SubtractionConfig()): SubtractionProblem {
         repeat(300) {
             val digits = random.nextInt(config.minDigits, config.maxDigits + 1)

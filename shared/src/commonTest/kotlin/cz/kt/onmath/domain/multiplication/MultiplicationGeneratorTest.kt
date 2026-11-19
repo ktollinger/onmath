@@ -1,8 +1,8 @@
 package cz.kt.onmath.domain.multiplication
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.random.Random
 
 class MultiplicationGeneratorTest {
@@ -27,7 +27,7 @@ class MultiplicationGeneratorTest {
 
         val problems = List(100) { generator.generate(config) }
         val divisions = problems.filter { it.operation == MultiplicationOperation.DIVIDE }
-        assertTrue("Expected some division problems", divisions.isNotEmpty())
+        assertTrue(divisions.isNotEmpty(), "Expected some division problems")
 
         divisions.forEach { problem ->
             assertEquals(0, problem.left % problem.right)

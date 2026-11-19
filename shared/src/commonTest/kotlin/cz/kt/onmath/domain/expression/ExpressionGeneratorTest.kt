@@ -1,9 +1,9 @@
 package cz.kt.onmath.domain.expression
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.random.Random
 
 class ExpressionGeneratorTest {
@@ -36,7 +36,7 @@ class ExpressionGeneratorTest {
             val problem = generator.generate(ExpressionDifficulty.WITHOUT_PARENTHESES)
             assertTrue(problem.root.allIntermediatesNonNegative())
             assertTrue(problem.answer >= 0)
-            assertFalse("Unexpected parentheses in ${problem.displayText}", problem.displayText.contains("("))
+            assertFalse(problem.displayText.contains("("), "Unexpected parentheses in ${problem.displayText}")
         }
     }
 
@@ -47,7 +47,7 @@ class ExpressionGeneratorTest {
             val problem = generator.generate(ExpressionDifficulty.WITH_PARENTHESES)
             assertTrue(problem.root.allIntermediatesNonNegative())
             assertTrue(problem.answer >= 0)
-            assertTrue("Expected parentheses in ${problem.displayText}", problem.displayText.contains("("))
+            assertTrue(problem.displayText.contains("("), "Expected parentheses in ${problem.displayText}")
             assertTrue(problem.hintText.isNotBlank())
         }
     }
@@ -68,8 +68,8 @@ class ExpressionGeneratorTest {
                 allowLargeIntermediate = false,
             )
             assertTrue(
-                "Expected <= 10x10 in ${problem.displayText}",
                 allMultiplicationsWithinTen(problem.root),
+                "Expected <= 10x10 in ${problem.displayText}",
             )
         }
     }

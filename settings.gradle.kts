@@ -20,4 +20,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "OnMath"
-include(":app")
+include(":app", ":shared")

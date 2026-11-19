@@ -18,7 +18,7 @@ Planned improvements for `onmath`, while preserving its core principles: **offli
 - [ ] Display a collectible badge / sticker shelf inside the app as purely voluntary motivation — no notifications, no punishing daily streaks, and no online leaderboards.
 
 ## 4. iOS Port (iPhone 16 Pro, iPhone SE 2022)
-- [ ] Extract `domain/` into a shared Kotlin Multiplatform (KMP) module (`shared`).
+- [x] Extract `domain/` into a shared Kotlin Multiplatform (KMP) module (`shared`).
 - [ ] Build a native SwiftUI interface tuned for smaller screens like iPhone SE 2022 as well (compact `MathKeypad` and expression tree spacing).
 - [ ] Implement local persistence on iOS (`UserDefaults` + SwiftData/SQLite).
 

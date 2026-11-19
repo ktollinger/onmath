@@ -20,6 +20,7 @@ data class ExpressionProblem(
 class ExpressionGenerator(
     private val random: Random = Random.Default,
 ) {
+    constructor() : this(Random.Default)
     fun generate(
         difficulty: ExpressionDifficulty = ExpressionDifficulty.WITH_PARENTHESES,
         allowLargeIntermediate: Boolean = false,

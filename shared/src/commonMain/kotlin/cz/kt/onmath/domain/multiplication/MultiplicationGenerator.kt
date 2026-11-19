@@ -41,6 +41,7 @@ data class MultiplicationProblem(
 class MultiplicationGenerator(
     private val random: Random = Random.Default,
 ) {
+    constructor() : this(Random.Default)
     fun generate(config: MultiplicationConfig = MultiplicationConfig()): MultiplicationProblem {
         val table = config.selectedTables.random(random)
         val factor = random.nextInt(1, 11)
