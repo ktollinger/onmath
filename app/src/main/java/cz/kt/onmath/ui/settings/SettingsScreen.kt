@@ -179,6 +179,12 @@ fun SettingsScreen(
                 onCheckedChange = viewModel::setExpressionWithParentheses,
             )
 
+            SwitchSettingRow(
+                title = "Vyšší obtížnost (násobení nad 10, např. 18 × 3)",
+                checked = settings.expressionLargeIntermediate,
+                onCheckedChange = viewModel::setExpressionLargeIntermediate,
+            )
+
             HorizontalDivider()
             SectionTitle("Historie")
 

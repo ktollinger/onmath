@@ -64,6 +64,12 @@ class SettingsViewModel(
         }
     }
 
+    fun setExpressionLargeIntermediate(allowLarge: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.updateExpressionLargeIntermediate(allowLarge)
+        }
+    }
+
     fun clearHistory() {
         viewModelScope.launch {
             practiceRepository.clearAllHistory()

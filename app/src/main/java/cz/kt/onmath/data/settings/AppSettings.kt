@@ -9,4 +9,5 @@ data class AppSettings(
     val multiplicationTables: Set<Int> = (1..10).toSet(),
     val multiplicationIncludeDivision: Boolean = false,
     val expressionWithParentheses: Boolean = true,
+    val expressionLargeIntermediate: Boolean = false,
 )

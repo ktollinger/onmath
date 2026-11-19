@@ -22,6 +22,7 @@ interface SettingsRepository {
     suspend fun updateMultiplicationTables(tables: Set<Int>)
     suspend fun updateMultiplicationIncludeDivision(include: Boolean)
     suspend fun updateExpressionWithParentheses(withParentheses: Boolean)
+    suspend fun updateExpressionLargeIntermediate(allowLarge: Boolean)
 }
 
 class DataStoreSettingsRepository(
@@ -35,6 +36,7 @@ class DataStoreSettingsRepository(
         val MULTIPLICATION_TABLES = stringPreferencesKey("multiplication_tables")
         val MULTIPLICATION_INCLUDE_DIVISION = booleanPreferencesKey("multiplication_include_division")
         val EXPRESSION_WITH_PARENTHESES = booleanPreferencesKey("expression_with_parentheses")
+        val EXPRESSION_LARGE_INTERMEDIATE = booleanPreferencesKey("expression_large_intermediate")
     }
 
     override val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { prefs ->
@@ -60,6 +62,7 @@ class DataStoreSettingsRepository(
             multiplicationTables = tables,
             multiplicationIncludeDivision = prefs[Keys.MULTIPLICATION_INCLUDE_DIVISION] ?: false,
             expressionWithParentheses = prefs[Keys.EXPRESSION_WITH_PARENTHESES] ?: true,
+            expressionLargeIntermediate = prefs[Keys.EXPRESSION_LARGE_INTERMEDIATE] ?: false,
         )
     }
 
@@ -90,5 +93,9 @@ class DataStoreSettingsRepository(
 
     override suspend fun updateExpressionWithParentheses(withParentheses: Boolean) {
         context.dataStore.edit { it[Keys.EXPRESSION_WITH_PARENTHESES] = withParentheses }
+    }
+
+    override suspend fun updateExpressionLargeIntermediate(allowLarge: Boolean) {
+        context.dataStore.edit { it[Keys.EXPRESSION_LARGE_INTERMEDIATE] = allowLarge }
     }
 }

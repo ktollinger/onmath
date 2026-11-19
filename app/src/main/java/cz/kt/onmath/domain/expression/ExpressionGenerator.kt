@@ -20,13 +20,16 @@ data class ExpressionProblem(
 class ExpressionGenerator(
     private val random: Random = Random.Default,
 ) {
-    fun generate(difficulty: ExpressionDifficulty = ExpressionDifficulty.WITH_PARENTHESES): ExpressionProblem {
+    fun generate(
+        difficulty: ExpressionDifficulty = ExpressionDifficulty.WITH_PARENTHESES,
+        allowLargeIntermediate: Boolean = false,
+    ): ExpressionProblem {
         repeat(200) {
             val candidate = when (difficulty) {
                 ExpressionDifficulty.WITHOUT_PARENTHESES -> buildWithoutParentheses()
-                ExpressionDifficulty.WITH_PARENTHESES -> buildWithParentheses()
+                ExpressionDifficulty.WITH_PARENTHESES -> buildWithParentheses(allowLargeIntermediate)
             }
-            if (candidate != null && isValid(candidate)) {
+            if (candidate != null && isValid(candidate, allowLargeIntermediate)) {
                 val formatted = candidate.format()
                 val answer = candidate.evaluate()
                 return ExpressionProblem(
@@ -54,19 +57,20 @@ class ExpressionGenerator(
     fun generateSet(
         difficulty: ExpressionDifficulty = ExpressionDifficulty.WITH_PARENTHESES,
         count: Int = 10,
+        allowLargeIntermediate: Boolean = false,
     ): List<ExpressionProblem> {
         require(count > 0) { "Count must be positive." }
         val result = mutableListOf<ExpressionProblem>()
         var attempts = 0
         while (result.size < count && attempts < count * 10) {
             attempts++
-            val candidate = generate(difficulty)
+            val candidate = generate(difficulty, allowLargeIntermediate)
             if (result.none { it.key == candidate.key }) {
                 result.add(candidate)
             }
         }
         while (result.size < count) {
-            result.add(generate(difficulty))
+            result.add(generate(difficulty, allowLargeIntermediate))
         }
         return result
     }
@@ -95,7 +99,7 @@ class ExpressionGenerator(
         }
     }
 
-    private fun buildWithParentheses(): ExpressionNode? {
+    private fun buildWithParentheses(allowLargeIntermediate: Boolean): ExpressionNode? {
         val innerOp = if (random.nextBoolean()) BinaryOperator.ADD else BinaryOperator.SUBTRACT
         val leftVal = random.nextInt(2, 21)
         val rightVal = random.nextInt(2, 21)
@@ -106,6 +110,7 @@ class ExpressionGenerator(
         val outerHighOp = if (random.nextBoolean()) BinaryOperator.MULTIPLY else BinaryOperator.DIVIDE
         return when (outerHighOp) {
             BinaryOperator.MULTIPLY -> {
+                if (!allowLargeIntermediate && innerResult !in 2..10) return null
                 val factor = NumberNode(random.nextInt(2, 11))
                 val core = if (random.nextBoolean()) {
                     BinaryNode(inner, BinaryOperator.MULTIPLY, factor)
@@ -115,7 +120,9 @@ class ExpressionGenerator(
                 maybeAppendLowOp(core)
             }
             BinaryOperator.DIVIDE -> {
-                val divisors = (2..10).filter { innerResult % it == 0 }
+                val divisors = (2..10).filter { divisor ->
+                    innerResult % divisor == 0 && (allowLargeIntermediate || innerResult / divisor in 2..10)
+                }
                 if (divisors.isEmpty()) return null
                 val divisor = NumberNode(divisors.random(random))
                 val core = BinaryNode(inner, BinaryOperator.DIVIDE, divisor)
@@ -148,8 +155,22 @@ class ExpressionGenerator(
         }
     }
 
-    private fun isValid(node: ExpressionNode): Boolean {
+    private fun isValid(node: ExpressionNode, allowLargeIntermediate: Boolean): Boolean {
         val result = runCatching { node.evaluate() }.getOrNull() ?: return false
-        return node.allIntermediatesNonNegative() && result in 0..250
+        if (!node.allIntermediatesNonNegative() || result !in 0..250) return false
+        return allowLargeIntermediate || node.allHighPrecedenceWithinTable()
+    }
+
+    private fun ExpressionNode.allHighPrecedenceWithinTable(): Boolean = when (this) {
+        is NumberNode -> true
+        is BinaryNode -> {
+            val childrenOk = left.allHighPrecedenceWithinTable() && right.allHighPrecedenceWithinTable()
+            val selfOk = when (operator) {
+                BinaryOperator.MULTIPLY -> left.evaluate() <= 10 && right.evaluate() <= 10
+                BinaryOperator.DIVIDE -> right.evaluate() <= 10 && evaluate() <= 10
+                BinaryOperator.ADD, BinaryOperator.SUBTRACT -> true
+            }
+            childrenOk && selfOk
+        }
     }
 }

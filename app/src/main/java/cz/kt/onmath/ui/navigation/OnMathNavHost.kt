@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import cz.kt.onmath.ui.AppViewModelProvider
 import cz.kt.onmath.ui.home.HomeScreen
+import cz.kt.onmath.ui.practice.ExpressionsScreen
 import cz.kt.onmath.ui.practice.ExpressionsViewModel
 import cz.kt.onmath.ui.practice.MultiplicationViewModel
 import cz.kt.onmath.ui.practice.StandardPracticeScreen
@@ -61,8 +62,12 @@ fun OnMathNavHost(
         composable(OnMathScreens.Expressions.route) {
             val vm: ExpressionsViewModel = viewModel(factory = AppViewModelProvider.Factory)
             val state by vm.uiState.collectAsStateWithLifecycle()
-            StandardPracticeScreen(
+            ExpressionsScreen(
                 state = state,
+                onSelectOperator = vm::onSelectOperator,
+                onSelectSubstituted = vm::onSelectSubstituted,
+                onCancelIntermediate = vm::onCancelIntermediate,
+                onUndoIntermediate = vm::onUndoIntermediate,
                 onDigit = vm::onDigit,
                 onBackspace = vm::onBackspace,
                 onSubmit = vm::onSubmit,
