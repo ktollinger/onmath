@@ -10,7 +10,6 @@ import cz.kt.onmath.domain.subtraction.SubtractionConfig
 import cz.kt.onmath.domain.subtraction.SubtractionGenerator
 import cz.kt.onmath.domain.subtraction.SubtractionProblem
 import cz.kt.onmath.ui.components.FeedbackState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +29,7 @@ data class SubtractionUiState(
     val markedBorrows: Set<Int> = emptySet(),
     val wrongPlaces: Set<Int> = emptySet(),
     val feedback: FeedbackState = FeedbackState.None,
-    val isAdvancing: Boolean = false,
+    val isSolved: Boolean = false,
     val isFinished: Boolean = false,
 )
 
@@ -69,12 +68,12 @@ class SubtractionViewModel(
     }
 
     fun onSelectPlace(placeIndex: Int) {
-        if (_uiState.value.isAdvancing || _uiState.value.isFinished) return
+        if (_uiState.value.isSolved || _uiState.value.isFinished) return
         _uiState.update { it.copy(activePlaceIndex = placeIndex, feedback = FeedbackState.None) }
     }
 
     fun onToggleBorrowMarker(placeIndex: Int) {
-        if (_uiState.value.isAdvancing || _uiState.value.isFinished) return
+        if (_uiState.value.isSolved || _uiState.value.isFinished) return
         _uiState.update { state ->
             val updated = if (placeIndex in state.markedBorrows) {
                 state.markedBorrows - placeIndex
@@ -88,7 +87,7 @@ class SubtractionViewModel(
     fun onDigit(digit: Int) {
         val state = _uiState.value
         val problem = state.problem ?: return
-        if (state.isAdvancing || state.isFinished) return
+        if (state.isSolved || state.isFinished) return
 
         val updatedDigits = state.resultDigits.toMutableMap().apply {
             this[state.activePlaceIndex] = digit
@@ -106,7 +105,7 @@ class SubtractionViewModel(
 
     fun onBackspace() {
         val state = _uiState.value
-        if (state.isAdvancing || state.isFinished) return
+        if (state.isSolved || state.isFinished) return
 
         val updatedDigits = state.resultDigits.toMutableMap()
         val targetPlace = if (state.activePlaceIndex in updatedDigits) {
@@ -135,7 +134,12 @@ class SubtractionViewModel(
     fun onSubmit() {
         val state = _uiState.value
         val problem = state.problem ?: return
-        if (state.isAdvancing || state.isFinished || state.resultDigits.isEmpty()) return
+        if (state.isFinished) return
+        if (state.isSolved) {
+            onNextProblem()
+            return
+        }
+        if (state.resultDigits.isEmpty()) return
 
         var givenAnswer = 0
         for (place in 0 until problem.digitCount) {
@@ -149,13 +153,9 @@ class SubtractionViewModel(
                 it.copy(
                     correctFirstTry = newCorrectFirstTry,
                     wrongPlaces = emptySet(),
-                    feedback = FeedbackState.Correct(),
-                    isAdvancing = true,
+                    feedback = FeedbackState.Correct("Správně! Prohlédni si výsledek a pokračuj."),
+                    isSolved = true,
                 )
-            }
-            viewModelScope.launch {
-                delay(700)
-                advanceToNext(newCorrectFirstTry)
             }
         } else {
             val wrong = problem.columnsRightToLeft
@@ -185,6 +185,14 @@ class SubtractionViewModel(
         }
     }
 
+    fun onNextProblem() {
+        val state = _uiState.value
+        if (!state.isSolved || state.isFinished) return
+        viewModelScope.launch {
+            advanceToNext(state.correctFirstTry)
+        }
+    }
+
     private suspend fun advanceToNext(correctFirstTry: Int) {
         val nextIndex = _uiState.value.currentIndex + 1
         if (nextIndex >= problems.size) {
@@ -194,7 +202,7 @@ class SubtractionViewModel(
                 correctFirstTry = correctFirstTry,
             )
             _uiState.update {
-                it.copy(isAdvancing = false, isFinished = true)
+                it.copy(isSolved = false, isFinished = true)
             }
         } else {
             hadMistakeOnCurrent = false
@@ -207,7 +215,7 @@ class SubtractionViewModel(
                     markedBorrows = emptySet(),
                     wrongPlaces = emptySet(),
                     feedback = FeedbackState.None,
-                    isAdvancing = false,
+                    isSolved = false,
                 )
             }
         }

@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +47,8 @@ import cz.kt.onmath.ui.components.FeedbackBanner
 import cz.kt.onmath.ui.components.MathKeypad
 import cz.kt.onmath.ui.components.PracticeTopBar
 import cz.kt.onmath.ui.components.SessionSummaryView
+import cz.kt.onmath.ui.theme.CorrectContainerGreen
+import cz.kt.onmath.ui.theme.CorrectGreen
 import cz.kt.onmath.ui.theme.ErrorContainerRed
 import cz.kt.onmath.ui.theme.ErrorRed
 import cz.kt.onmath.ui.theme.HintAmber
@@ -96,8 +101,10 @@ fun SubtractionScreen(
                     .fillMaxWidth()
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.Top,
             ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 ColumnSubtractionBoard(
                     problem = problem,
                     method = state.method,
@@ -105,6 +112,7 @@ fun SubtractionScreen(
                     activePlaceIndex = state.activePlaceIndex,
                     markedBorrows = state.markedBorrows,
                     wrongPlaces = state.wrongPlaces,
+                    isSolved = state.isSolved,
                     onSelectPlace = viewModel::onSelectPlace,
                     onToggleBorrow = viewModel::onToggleBorrowMarker,
                 )
@@ -121,30 +129,50 @@ fun SubtractionScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                OutlinedButton(
-                    onClick = viewModel::onHint,
-                    enabled = !state.isAdvancing,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lightbulb,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 6.dp),
-                    )
-                    Text("Nápověda k řádu")
+                if (state.isSolved) {
+                    Button(
+                        onClick = viewModel::onNextProblem,
+                    ) {
+                        Text("Další příklad")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            modifier = Modifier.padding(start = 6.dp),
+                        )
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = viewModel::onHint,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lightbulb,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 6.dp),
+                        )
+                        Text("Nápověda k řádu")
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                FeedbackBanner(state = state.feedback)
+                // Fixed-height slot prevents the board from jumping when feedback appears/disappears
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 56.dp),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    FeedbackBanner(state = state.feedback)
+                }
             }
 
             MathKeypad(
                 onDigit = viewModel::onDigit,
                 onBackspace = viewModel::onBackspace,
                 onSubmit = viewModel::onSubmit,
-                submitEnabled = state.resultDigits.isNotEmpty() && !state.isAdvancing,
+                submitEnabled = state.resultDigits.isNotEmpty(),
             )
         }
     }
@@ -158,6 +186,7 @@ private fun ColumnSubtractionBoard(
     activePlaceIndex: Int,
     markedBorrows: Set<Int>,
     wrongPlaces: Set<Int>,
+    isSolved: Boolean,
     onSelectPlace: (Int) -> Unit,
     onToggleBorrow: (Int) -> Unit,
 ) {
@@ -289,11 +318,13 @@ private fun ColumnSubtractionBoard(
                 val entered = resultDigits[col.placeIndex]
 
                 val borderColor = when {
+                    isSolved -> CorrectGreen
                     isWrong -> ErrorRed
                     isActive -> MaterialTheme.colorScheme.primary
                     else -> MaterialTheme.colorScheme.outlineVariant
                 }
                 val bgColor = when {
+                    isSolved -> CorrectContainerGreen
                     isWrong -> ErrorContainerRed
                     isActive -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
                     else -> MaterialTheme.colorScheme.surfaceContainerLow
@@ -302,7 +333,7 @@ private fun ColumnSubtractionBoard(
                 Surface(
                     onClick = { onSelectPlace(col.placeIndex) },
                     shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(if (isActive || isWrong) 2.dp else 1.dp, borderColor),
+                    border = BorderStroke(if (isActive || isWrong || isSolved) 2.dp else 1.dp, borderColor),
                     color = bgColor,
                     modifier = Modifier.size(width = cellWidth, height = 54.dp),
                 ) {
@@ -312,7 +343,11 @@ private fun ColumnSubtractionBoard(
                             fontSize = 28.sp,
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
-                            color = if (isWrong) ErrorRed else MaterialTheme.colorScheme.onSurface,
+                            color = when {
+                                isSolved -> CorrectGreen
+                                isWrong -> ErrorRed
+                                else -> MaterialTheme.colorScheme.onSurface
+                            },
                         )
                     }
                 }
