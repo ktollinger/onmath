@@ -9,3 +9,8 @@ build/
 .cxx
 local.properties
 .kotlin
+
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+DerivedData/

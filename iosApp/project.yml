@@ -1,0 +1,40 @@
+name: OnMath
+options:
+  bundleIdPrefix: cz.kt
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "16.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_LANGUAGE: en
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+
+targets:
+  OnMath:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: OnMath
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cz.kt.onmath
+        INFOPLIST_FILE: OnMath/Resources/Info.plist
+        FRAMEWORK_SEARCH_PATHS:
+          - "$(inherited)"
+          - "$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
+        OTHER_LDFLAGS:
+          - "$(inherited)"
+          - "-framework"
+          - "Shared"
+    preBuildScripts:
+      - name: Compile Kotlin Multiplatform Shared Framework
+        script: |
+          cd "$SRCROOT/.."
+          ./gradlew :shared:embedAndSignAppleFrameworkForXcode
+        basedOnDependencyAnalysis: false

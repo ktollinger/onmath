@@ -19,8 +19,8 @@ Planned improvements for `onmath`, while preserving its core principles: **offli
 
 ## 4. iOS Port (iPhone 16 Pro, iPhone SE 2022)
 - [x] Extract `domain/` into a shared Kotlin Multiplatform (KMP) module (`shared`).
-- [ ] Build a native SwiftUI interface tuned for smaller screens like iPhone SE 2022 as well (compact `MathKeypad` and expression tree spacing).
-- [ ] Implement local persistence on iOS (`UserDefaults` + SwiftData/SQLite).
+- [x] Build a native SwiftUI interface tuned for smaller screens like iPhone SE 2022 as well (compact `MathKeypad` and expression tree spacing).
+- [x] Implement local persistence on iOS (`UserDefaults` + JSON history).
 
 ## 5. Optional Support ("Buy Me a Coffee")
 - [ ] Add an optional *Tip Jar* in Settings / About (behind a simple parental gate, such as a harder math problem) using native Google Play Billing / StoreKit 2, keeping the app compliant with store policies and free of ads or tracking.
