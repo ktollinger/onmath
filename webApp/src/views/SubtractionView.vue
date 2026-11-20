@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import FeedbackBanner, { type FeedbackState } from '../components/FeedbackBanner.vue';
 import MathKeypad from '../components/MathKeypad.vue';
 import PracticeHeader from '../components/PracticeHeader.vue';
+import SessionHistoryPanel, { type SolvedItem } from '../components/SessionHistoryPanel.vue';
 import SessionSummary from '../components/SessionSummary.vue';
 import { generateSubtractionSet, type SubtractionProblem } from '../domain/subtraction';
 import { store } from '../state/store';
@@ -19,8 +20,8 @@ const markedBorrows = ref<number[]>([]);
 const wrongPlaces = ref<number[]>([]);
 const hadMistake = ref(false);
 const correctFirstTry = ref(0);
+const solvedItems = ref<SolvedItem[]>([]);
 const feedback = ref<FeedbackState>({ kind: 'none' });
-const isSolved = ref(false);
 const isFinished = ref(false);
 
 function startNewSession() {
@@ -38,8 +39,8 @@ function startNewSession() {
   wrongPlaces.value = [];
   hadMistake.value = false;
   correctFirstTry.value = 0;
+  solvedItems.value = [];
   feedback.value = { kind: 'none' };
-  isSolved.value = false;
   isFinished.value = false;
 }
 
@@ -55,7 +56,7 @@ const subtrahendDigitsCount = computed(() =>
 const hasDigits = computed(() => Object.keys(resultDigits.value).length > 0);
 
 function toggleBorrow(place: number) {
-  if (isSolved.value || isFinished.value || place <= 0) return;
+  if (isFinished.value || place <= 0) return;
   if (markedBorrows.value.includes(place)) {
     markedBorrows.value = markedBorrows.value.filter((p) => p !== place);
   } else {
@@ -64,14 +65,14 @@ function toggleBorrow(place: number) {
 }
 
 function selectPlace(place: number) {
-  if (isSolved.value || isFinished.value) return;
+  if (isFinished.value) return;
   activePlaceIndex.value = place;
   feedback.value = { kind: 'none' };
 }
 
 function onDigit(digit: number) {
   const p = currentProblem.value;
-  if (!p || isSolved.value || isFinished.value) return;
+  if (!p || isFinished.value) return;
   resultDigits.value = { ...resultDigits.value, [activePlaceIndex.value]: digit };
   wrongPlaces.value = wrongPlaces.value.filter((w) => w !== activePlaceIndex.value);
   activePlaceIndex.value = Math.min(activePlaceIndex.value + 1, p.digitCount - 1);
@@ -79,7 +80,7 @@ function onDigit(digit: number) {
 }
 
 function onBackspace() {
-  if (isSolved.value || isFinished.value) return;
+  if (isFinished.value) return;
   const targetPlace =
     resultDigits.value[activePlaceIndex.value] !== undefined
       ? activePlaceIndex.value
@@ -128,10 +129,6 @@ function showHint() {
 
 function onSubmit() {
   if (isFinished.value) return;
-  if (isSolved.value) {
-    onNextProblem();
-    return;
-  }
   const p = currentProblem.value;
   if (!p || !hasDigits.value) return;
 
@@ -144,9 +141,15 @@ function onSubmit() {
 
   if (givenAnswer === p.answer) {
     if (!hadMistake.value) correctFirstTry.value += 1;
-    wrongPlaces.value = [];
-    feedback.value = { kind: 'correct', message: store.t('feedbackCorrectInspect') };
-    isSolved.value = true;
+    solvedItems.value = [
+      ...solvedItems.value,
+      {
+        expression: `${p.minuend} − ${p.subtrahend}`,
+        answer: p.answer,
+        hadMistake: hadMistake.value,
+      },
+    ];
+    advanceToNext();
   } else {
     const wrong = p.columnsRightToLeft
       .filter((col) => (resultDigits.value[col.placeIndex] ?? 0) !== col.expectedResultDigit)
@@ -161,11 +164,9 @@ function onSubmit() {
   }
 }
 
-function onNextProblem() {
-  if (!isSolved.value || isFinished.value) return;
+function advanceToNext() {
   if (currentIndex.value + 1 >= problems.value.length) {
     store.recordSession('SUBTRACTION', problems.value.length, correctFirstTry.value);
-    isSolved.value = false;
     isFinished.value = true;
   } else {
     currentIndex.value += 1;
@@ -175,143 +176,143 @@ function onNextProblem() {
     wrongPlaces.value = [];
     hadMistake.value = false;
     feedback.value = { kind: 'none' };
-    isSolved.value = false;
   }
 }
 </script>
 
 <template>
-  <div class="practice-root">
-    <PracticeHeader
-      v-if="!isFinished"
-      :title="store.t('topicSubtraction')"
-      :current-index="currentIndex"
-      :total-count="problems.length"
-      @back="emit('back')"
-    />
-
-    <SessionSummary
-      v-if="isFinished"
-      :topic-title="store.t('topicSubtraction')"
-      :correct-first-try="correctFirstTry"
-      :total-problems="problems.length"
-      @restart="startNewSession"
-      @back-home="emit('back')"
-    />
-
-    <div v-else-if="currentProblem" class="practice-screen">
-      <div class="practice-body sub-body">
-        <div class="board" :class="{ compact: currentProblem.digitCount >= 6 }">
-          <!-- BORROW_TOP helper row -->
-          <div v-if="store.settings.subtractionMethod === 'BORROW_TOP'" class="board-row">
-            <span class="op-spacer" />
-            <button
-              v-for="col in colsLeftToRight"
-              :key="`bt-${col.placeIndex}`"
-              type="button"
-              class="borrow-cell"
-              :class="{
-                clickable: col.placeIndex > 0,
-                marked: markedBorrows.includes(col.placeIndex),
-              }"
-              :disabled="col.placeIndex === 0"
-              @click="toggleBorrow(col.placeIndex)"
-            >
-              <span v-if="col.placeIndex > 0 && markedBorrows.includes(col.placeIndex)">
-                {{ Math.max(0, col.minuendDigit - 1) }}
-              </span>
-            </button>
-          </div>
-
-          <!-- Minuend row -->
-          <div class="board-row">
-            <span class="op-spacer" />
-            <button
-              v-for="col in colsLeftToRight"
-              :key="`m-${col.placeIndex}`"
-              type="button"
-              class="digit-cell"
-              :class="{
-                crossed: store.settings.subtractionMethod === 'BORROW_TOP' && col.placeIndex > 0 && markedBorrows.includes(col.placeIndex),
-              }"
-              :disabled="!(store.settings.subtractionMethod === 'BORROW_TOP' && col.placeIndex > 0)"
-              @click="toggleBorrow(col.placeIndex)"
-            >
-              {{ col.minuendDigit }}
-            </button>
-          </div>
-
-          <!-- Subtrahend row -->
-          <div class="board-row">
-            <span class="op-spacer minus">−</span>
-            <button
-              v-for="col in colsLeftToRight"
-              :key="`s-${col.placeIndex}`"
-              type="button"
-              class="digit-cell"
-              :disabled="!(store.settings.subtractionMethod === 'CARRY_BOTTOM' && col.placeIndex > 0)"
-              @click="toggleBorrow(col.placeIndex)"
-            >
-              <span>{{ col.placeIndex < subtrahendDigitsCount ? col.subtrahendDigit : '' }}</span>
-              <span
-                v-if="store.settings.subtractionMethod === 'CARRY_BOTTOM' && col.placeIndex > 0 && markedBorrows.includes(col.placeIndex)"
-                class="carry-badge"
-              >
-                1
-              </span>
-            </button>
-          </div>
-
-          <div class="board-line" />
-
-          <!-- Result row -->
-          <div class="board-row">
-            <span class="op-spacer" />
-            <button
-              v-for="col in colsLeftToRight"
-              :key="`r-${col.placeIndex}`"
-              type="button"
-              class="result-cell"
-              :class="{
-                active: col.placeIndex === activePlaceIndex && !isSolved,
-                wrong: wrongPlaces.includes(col.placeIndex),
-              }"
-              @click="selectPlace(col.placeIndex)"
-            >
-              {{ resultDigits[col.placeIndex] ?? '' }}
-            </button>
-          </div>
-        </div>
-
-        <p class="tip-text">
-          {{
-            store.settings.subtractionMethod === 'BORROW_TOP'
-              ? store.t('subTipBorrowTop')
-              : store.t('subTipCarryBottom')
-          }}
-        </p>
-
-        <div class="action-slot">
-          <button v-if="isSolved" type="button" class="btn-primary" @click="onNextProblem">
-            {{ store.t('actionNextProblem') }} →
-          </button>
-          <button v-else type="button" class="btn-outline" @click="showHint">
-            💡 {{ store.t('actionHintColumn') }}
-          </button>
-        </div>
-
-        <div class="feedback-slot">
-          <FeedbackBanner :state="feedback" />
-        </div>
-      </div>
-
-      <MathKeypad
-        :submit-enabled="hasDigits"
-        @digit="onDigit"
-        @backspace="onBackspace"
-        @submit="onSubmit"
+  <div class="practice-layout">
+    <div class="practice-primary">
+      <PracticeHeader
+        v-if="!isFinished"
+        :title="store.t('topicSubtraction')"
+        :current-index="currentIndex"
+        :total-count="problems.length"
+        @back="emit('back')"
       />
+
+      <SessionSummary
+        v-if="isFinished"
+        :topic-title="store.t('topicSubtraction')"
+        :correct-first-try="correctFirstTry"
+        :total-problems="problems.length"
+        @restart="startNewSession"
+        @back-home="emit('back')"
+      />
+
+      <div v-else-if="currentProblem" class="practice-screen">
+        <div class="practice-body sub-body">
+          <div class="board" :class="{ compact: currentProblem.digitCount >= 6 }">
+            <!-- BORROW_TOP helper row -->
+            <div v-if="store.settings.subtractionMethod === 'BORROW_TOP'" class="board-row">
+              <span class="op-spacer" />
+              <button
+                v-for="col in colsLeftToRight"
+                :key="`bt-${col.placeIndex}`"
+                type="button"
+                class="borrow-cell"
+                :class="{
+                  clickable: col.placeIndex > 0,
+                  marked: markedBorrows.includes(col.placeIndex),
+                }"
+                :disabled="col.placeIndex === 0"
+                @click="toggleBorrow(col.placeIndex)"
+              >
+                <span v-if="col.placeIndex > 0 && markedBorrows.includes(col.placeIndex)">
+                  {{ Math.max(0, col.minuendDigit - 1) }}
+                </span>
+              </button>
+            </div>
+
+            <!-- Minuend row -->
+            <div class="board-row">
+              <span class="op-spacer" />
+              <button
+                v-for="col in colsLeftToRight"
+                :key="`m-${col.placeIndex}`"
+                type="button"
+                class="digit-cell"
+                :class="{
+                  crossed: store.settings.subtractionMethod === 'BORROW_TOP' && col.placeIndex > 0 && markedBorrows.includes(col.placeIndex),
+                }"
+                :disabled="!(store.settings.subtractionMethod === 'BORROW_TOP' && col.placeIndex > 0)"
+                @click="toggleBorrow(col.placeIndex)"
+              >
+                {{ col.minuendDigit }}
+              </button>
+            </div>
+
+            <!-- Subtrahend row -->
+            <div class="board-row">
+              <span class="op-spacer minus">−</span>
+              <button
+                v-for="col in colsLeftToRight"
+                :key="`s-${col.placeIndex}`"
+                type="button"
+                class="digit-cell"
+                :disabled="!(store.settings.subtractionMethod === 'CARRY_BOTTOM' && col.placeIndex > 0)"
+                @click="toggleBorrow(col.placeIndex)"
+              >
+                <span>{{ col.placeIndex < subtrahendDigitsCount ? col.subtrahendDigit : '' }}</span>
+                <span
+                  v-if="store.settings.subtractionMethod === 'CARRY_BOTTOM' && col.placeIndex > 0 && markedBorrows.includes(col.placeIndex)"
+                  class="carry-badge"
+                >
+                  1
+                </span>
+              </button>
+            </div>
+
+            <div class="board-line" />
+
+            <!-- Result row -->
+            <div class="board-row">
+              <span class="op-spacer" />
+              <button
+                v-for="col in colsLeftToRight"
+                :key="`r-${col.placeIndex}`"
+                type="button"
+                class="result-cell"
+                :class="{
+                  active: col.placeIndex === activePlaceIndex,
+                  wrong: wrongPlaces.includes(col.placeIndex),
+                }"
+                @click="selectPlace(col.placeIndex)"
+              >
+                {{ resultDigits[col.placeIndex] ?? '' }}
+              </button>
+            </div>
+          </div>
+
+          <p class="tip-text">
+            {{
+              store.settings.subtractionMethod === 'BORROW_TOP'
+                ? store.t('subTipBorrowTop')
+                : store.t('subTipCarryBottom')
+            }}
+          </p>
+
+          <div class="action-slot">
+            <button type="button" class="btn-outline" @click="showHint">
+              💡 {{ store.t('actionHintColumn') }}
+            </button>
+          </div>
+
+          <div class="feedback-slot">
+            <FeedbackBanner :state="feedback" />
+          </div>
+        </div>
+
+        <MathKeypad
+          :submit-enabled="hasDigits"
+          @digit="onDigit"
+          @backspace="onBackspace"
+          @submit="onSubmit"
+        />
+      </div>
     </div>
+
+    <SessionHistoryPanel :items="solvedItems" :total-count="problems.length" />
   </div>
 </template>
 

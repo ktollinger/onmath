@@ -49,6 +49,11 @@ const en = {
   settingsClearHistory: 'Clear history and statistics',
 
   feedbackCorrectInspect: 'Correct! Review the result and continue.',
+  historyPanelTitle: 'Solved ({0} / {1})',
+  historyPanelEmpty: 'Solved problems in this set will appear here.',
+  historyLastSolved: 'Last: {0} = {1}',
+  historyFirstTry: 'First try',
+  historyWithCorrection: 'After correction',
   actionHint: 'Hint',
   actionHintColumn: 'Place hint',
   actionNextProblem: 'Next problem',
@@ -141,6 +146,11 @@ const cs: Record<MessageKey, string> = {
   settingsClearHistory: 'Vymazat historii a statistiky',
 
   feedbackCorrectInspect: 'Správně! Prohlédni si výsledek a pokračuj.',
+  historyPanelTitle: 'Vyřešeno ({0} / {1})',
+  historyPanelEmpty: 'Tady se budou zobrazovat vyřešené příklady z této sady.',
+  historyLastSolved: 'Poslední: {0} = {1}',
+  historyFirstTry: 'Na 1. pokus',
+  historyWithCorrection: 'Po opravě',
   actionHint: 'Nápověda',
   actionHintColumn: 'Nápověda k řádu',
   actionNextProblem: 'Další příklad',

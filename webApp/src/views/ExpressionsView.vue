@@ -4,6 +4,7 @@ import ExpressionTreeNode from '../components/ExpressionTreeNode.vue';
 import FeedbackBanner, { type FeedbackState } from '../components/FeedbackBanner.vue';
 import MathKeypad from '../components/MathKeypad.vue';
 import PracticeHeader from '../components/PracticeHeader.vue';
+import SessionHistoryPanel, { type SolvedItem } from '../components/SessionHistoryPanel.vue';
 import SessionSummary from '../components/SessionSummary.vue';
 import {
   evaluateNode,
@@ -31,8 +32,8 @@ const intermediateInputText = ref('');
 const inputText = ref('');
 const correctFirstTry = ref(0);
 const hadMistake = ref(false);
+const solvedItems = ref<SolvedItem[]>([]);
 const feedback = ref<FeedbackState>({ kind: 'none' });
-const isSolved = ref(false);
 const isFinished = ref(false);
 
 const activeInputText = computed(() =>
@@ -51,8 +52,8 @@ function startNewSession() {
   inputText.value = '';
   correctFirstTry.value = 0;
   hadMistake.value = false;
+  solvedItems.value = [];
   feedback.value = { kind: 'none' };
-  isSolved.value = false;
   isFinished.value = false;
 }
 
@@ -80,7 +81,7 @@ function tryAutoCommitPendingIntermediate(current: ExpressionProblem): boolean {
 }
 
 function onSelectOperator(nodeId: string) {
-  if (isSolved.value || isFinished.value) return;
+  if (isFinished.value) return;
   const current = problems.value[currentIndex.value];
   if (!current) return;
 
@@ -110,7 +111,7 @@ function onSelectOperator(nodeId: string) {
 }
 
 function onSelectSubstituted(nodeId: string) {
-  if (isSolved.value || isFinished.value) return;
+  if (isFinished.value) return;
   const current = problems.value[currentIndex.value];
   if (!current) return;
 
@@ -128,7 +129,7 @@ function onSelectSubstituted(nodeId: string) {
 }
 
 function onFocusFinalAnswer() {
-  if (isSolved.value || isFinished.value || selectedNodeId.value === null) return;
+  if (isFinished.value || selectedNodeId.value === null) return;
   const current = problems.value[currentIndex.value];
   if (!current) return;
   if (!tryAutoCommitPendingIntermediate(current)) return;
@@ -139,7 +140,7 @@ function onFocusFinalAnswer() {
 }
 
 function onCancelIntermediate() {
-  if (isSolved.value || isFinished.value) return;
+  if (isFinished.value) return;
   selectedNodeId.value = null;
   selectedSubExpression.value = '';
   intermediateInputText.value = '';
@@ -147,7 +148,7 @@ function onCancelIntermediate() {
 }
 
 function onUndoIntermediate() {
-  if (isSolved.value || isFinished.value || intermediateOrder.value.length === 0) return;
+  if (isFinished.value || intermediateOrder.value.length === 0) return;
   const lastId = intermediateOrder.value[intermediateOrder.value.length - 1];
   const cleared = removeIntermediateAndAncestors(lastId, intermediates.value, intermediateOrder.value);
   intermediates.value = cleared.intermediates;
@@ -159,7 +160,7 @@ function onUndoIntermediate() {
 }
 
 function onDigit(d: number) {
-  if (isSolved.value || isFinished.value) return;
+  if (isFinished.value) return;
   if (selectedNodeId.value !== null) {
     if (intermediateInputText.value.length >= 4) return;
     intermediateInputText.value = `${intermediateInputText.value}${d}`.replace(/^0+/, '') || '0';
@@ -171,7 +172,7 @@ function onDigit(d: number) {
 }
 
 function onBackspace() {
-  if (isSolved.value || isFinished.value) return;
+  if (isFinished.value) return;
   if (selectedNodeId.value !== null) {
     intermediateInputText.value = intermediateInputText.value.slice(0, -1);
   } else {
@@ -204,10 +205,6 @@ function showHint() {
 
 function onSubmit() {
   if (isFinished.value) return;
-  if (isSolved.value) {
-    onNextProblem();
-    return;
-  }
   const current = problems.value[currentIndex.value];
   if (!current) return;
 
@@ -238,8 +235,15 @@ function onSubmit() {
   const given = Number(inputText.value);
   if (given === current.answer) {
     if (!hadMistake.value) correctFirstTry.value += 1;
-    feedback.value = { kind: 'correct', message: store.t('feedbackCorrectInspect') };
-    isSolved.value = true;
+    solvedItems.value = [
+      ...solvedItems.value,
+      {
+        expression: current.key,
+        answer: current.answer,
+        hadMistake: hadMistake.value,
+      },
+    ];
+    advanceToNext();
   } else {
     if (!hadMistake.value) {
       hadMistake.value = true;
@@ -250,11 +254,9 @@ function onSubmit() {
   }
 }
 
-function onNextProblem() {
-  if (!isSolved.value || isFinished.value) return;
+function advanceToNext() {
   if (currentIndex.value + 1 >= problems.value.length) {
     store.recordSession('EXPRESSIONS', problems.value.length, correctFirstTry.value);
-    isSolved.value = false;
     isFinished.value = true;
   } else {
     currentIndex.value += 1;
@@ -266,93 +268,88 @@ function onNextProblem() {
     inputText.value = '';
     hadMistake.value = false;
     feedback.value = { kind: 'none' };
-    isSolved.value = false;
   }
 }
 </script>
 
 <template>
-  <div class="practice-root">
-    <PracticeHeader
-      v-if="!isFinished"
-      :title="store.t('topicExpressions')"
-      :current-index="currentIndex"
-      :total-count="problems.length"
-      @back="emit('back')"
-    />
+  <div class="practice-layout">
+    <div class="practice-primary">
+      <PracticeHeader
+        v-if="!isFinished"
+        :title="store.t('topicExpressions')"
+        :current-index="currentIndex"
+        :total-count="problems.length"
+        @back="emit('back')"
+      />
 
-    <SessionSummary
-      v-if="isFinished"
-      :topic-title="store.t('topicExpressions')"
-      :correct-first-try="correctFirstTry"
-      :total-problems="problems.length"
-      @restart="startNewSession"
-      @back-home="emit('back')"
-    />
+      <SessionSummary
+        v-if="isFinished"
+        :topic-title="store.t('topicExpressions')"
+        :correct-first-try="correctFirstTry"
+        :total-problems="problems.length"
+        @restart="startNewSession"
+        @back-home="emit('back')"
+      />
 
-    <div v-else class="practice-screen">
-      <div class="practice-body expr-body">
-        <div class="tip-slot">
-          <span v-if="Object.keys(intermediates).length === 0 && !selectedNodeId && !isSolved" class="tip-text">
-            {{ store.t('exprTipTapOperator') }}
-          </span>
-        </div>
+      <div v-else class="practice-screen">
+        <div class="practice-body expr-body">
+          <div class="tip-slot">
+            <span v-if="Object.keys(intermediates).length === 0 && !selectedNodeId" class="tip-text">
+              {{ store.t('exprTipTapOperator') }}
+            </span>
+          </div>
 
-        <div class="tree-scroll">
-          <div v-if="problems[currentIndex]" class="tree-row">
-            <ExpressionTreeNode
-              :node="problems[currentIndex].root"
-              node-id="root"
-              :wrap-with-parens="false"
-              :intermediates="intermediates"
-              :selected-node-id="selectedNodeId"
-              :enabled="!isSolved"
-              @select-operator="onSelectOperator"
-              @select-substituted="onSelectSubstituted"
-            />
+          <div class="tree-scroll">
+            <div v-if="problems[currentIndex]" class="tree-row">
+              <ExpressionTreeNode
+                :node="problems[currentIndex].root"
+                node-id="root"
+                :wrap-with-parens="false"
+                :intermediates="intermediates"
+                :selected-node-id="selectedNodeId"
+                :enabled="true"
+                @select-operator="onSelectOperator"
+                @select-substituted="onSelectSubstituted"
+              />
+              <button
+                type="button"
+                class="equals-btn"
+                :disabled="!selectedNodeId"
+                @click="onFocusFinalAnswer"
+              >
+                = ?
+              </button>
+            </div>
+          </div>
+
+          <div class="input-label" :class="{ active: selectedNodeId !== null }">
+            {{
+              selectedNodeId !== null
+                ? store.t('exprLabelIntermediate', selectedSubExpression)
+                : store.t('exprLabelFinal')
+            }}
+          </div>
+
+          <div
+            class="answer-box"
+            :class="{ intermediate: selectedNodeId !== null, empty: !activeInputText }"
+          >
+            {{ activeInputText || '?' }}
+          </div>
+
+          <div class="cancel-slot">
             <button
+              v-if="selectedNodeId !== null"
               type="button"
-              class="equals-btn"
-              :class="{ solved: isSolved }"
-              :disabled="!selectedNodeId || isSolved"
-              @click="onFocusFinalAnswer"
+              class="btn-text"
+              @click="onCancelIntermediate"
             >
-              {{ isSolved ? `= ${inputText}` : '= ?' }}
+              ✕ {{ store.t('exprBackToFinal') }}
             </button>
           </div>
-        </div>
 
-        <div class="input-label" :class="{ active: selectedNodeId !== null }">
-          {{
-            selectedNodeId !== null
-              ? store.t('exprLabelIntermediate', selectedSubExpression)
-              : store.t('exprLabelFinal')
-          }}
-        </div>
-
-        <div
-          class="answer-box"
-          :class="{ intermediate: selectedNodeId !== null, empty: !activeInputText }"
-        >
-          {{ activeInputText || '?' }}
-        </div>
-
-        <div class="cancel-slot">
-          <button
-            v-if="selectedNodeId !== null && !isSolved"
-            type="button"
-            class="btn-text"
-            @click="onCancelIntermediate"
-          >
-            ✕ {{ store.t('exprBackToFinal') }}
-          </button>
-        </div>
-
-        <div class="action-slot">
-          <button v-if="isSolved" type="button" class="btn-primary" @click="onNextProblem">
-            {{ store.t('actionNextProblem') }} →
-          </button>
-          <template v-else>
+          <div class="action-slot">
             <button type="button" class="btn-outline" @click="showHint">
               💡 {{ store.t('actionHint') }}
             </button>
@@ -364,21 +361,23 @@ function onNextProblem() {
             >
               ↶ {{ store.t('actionUndoStep') }}
             </button>
-          </template>
+          </div>
+
+          <div class="feedback-slot">
+            <FeedbackBanner :state="feedback" />
+          </div>
         </div>
 
-        <div class="feedback-slot">
-          <FeedbackBanner :state="feedback" />
-        </div>
+        <MathKeypad
+          :submit-enabled="activeInputText.length > 0"
+          @digit="onDigit"
+          @backspace="onBackspace"
+          @submit="onSubmit"
+        />
       </div>
-
-      <MathKeypad
-        :submit-enabled="activeInputText.length > 0"
-        @digit="onDigit"
-        @backspace="onBackspace"
-        @submit="onSubmit"
-      />
     </div>
+
+    <SessionHistoryPanel :items="solvedItems" :total-count="problems.length" />
   </div>
 </template>
 
