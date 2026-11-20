@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -131,7 +132,7 @@ fun ExpressionsScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(132.dp)
+                        .heightIn(min = 148.dp)
                         .horizontalScroll(rememberScrollState()),
                     contentAlignment = Alignment.TopCenter,
                 ) {

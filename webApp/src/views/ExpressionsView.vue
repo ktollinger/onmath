@@ -407,12 +407,13 @@ function onNextProblem() {
 
 .tree-scroll {
   width: 100%;
-  height: 124px;
+  min-height: 152px;
   overflow-x: auto;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   margin-top: 8px;
+  margin-bottom: 6px;
 }
 
 .tree-row {
@@ -496,7 +497,7 @@ function onNextProblem() {
 
 @media (max-height: 700px) {
   .tree-scroll {
-    height: 108px;
+    min-height: 136px;
   }
   .answer-box {
     height: 52px;
